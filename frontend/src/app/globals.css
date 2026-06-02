@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-sidebar-bg: #1c1e26;
+  --color-sidebar-hover: #2a2d39;
+  --color-main-bg: #f4f5f7;
+  
+  --color-card-bg: #ffffff;
+  --color-text-main: #111827;
+  --color-text-muted: #6b7280;
+  
+  --color-status-green: #22c55e;
+  --color-status-blue: #3b82f6;
+  --color-status-yellow: #eab308;
+  --color-status-red: #ef4444;
+}
+
+:root {
+  --background: var(--color-main-bg);
+  --foreground: var(--color-text-main);
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Map Overrides */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  border-radius: 1rem;
+}
+
+/* Brute-force hide Next.js Dev Indicator */
+nextjs-portal {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* Custom scrollbar for mission log */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

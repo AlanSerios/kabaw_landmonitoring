@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+.env
+.env.*
+node_modules/
+.next/
+
+# SECURITY: Never upload Google Earth Engine keys!
+service-account.json
+service-account.json.json
+*.pem
+*.key
