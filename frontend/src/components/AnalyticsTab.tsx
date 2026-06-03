@@ -249,7 +249,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
       </div>
 
       {/* Chart */}
-      <div className="flex-1 min-h-[240px]">
+      <div className="flex-1 min-h-[300px] mt-6 relative">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeMetric}
@@ -257,7 +257,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
-            className="w-full h-full min-h-[240px]"
+            className="absolute inset-0 w-full h-full"
           >
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
