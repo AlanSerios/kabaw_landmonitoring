@@ -173,7 +173,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
           )}
 
           {/* Metric summary cards */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 md:gap-4">
         <button
           onClick={() => setActiveMetric(activeMetric === 'ndvi' ? 'both' : 'ndvi')}
           className={`rounded-2xl p-5 border transition-all duration-300 text-left ${
@@ -224,11 +224,11 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
       </div>
 
       {/* Chart controls */}
-      <div className="flex items-center justify-between mt-4">
-        <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mt-4 md:mt-6 gap-4">
+        <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest text-center md:text-left">
           {activeMetric === 'both' ? 'NDVI & NDWI' : activeMetric === 'ndvi' ? 'Vegetation (NDVI)' : 'Moisture (NDWI)'} over Time
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl">
+        <div className="flex bg-slate-100 p-1 rounded-xl mx-auto md:mx-0 w-full md:w-auto overflow-x-auto hide-scrollbar">
           {(['days', 'months', 'years'] as const).map((g) => (
             <button
               key={g}
@@ -236,7 +236,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
                 if (timeframe === g) return;
                 setTimeframe(g);
               }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 timeframe === g 
                 ? 'bg-white text-emerald-600 shadow-sm' 
                 : 'text-slate-500 hover:text-slate-700'

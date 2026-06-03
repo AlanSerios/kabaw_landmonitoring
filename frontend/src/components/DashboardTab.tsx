@@ -89,23 +89,23 @@ export default function DashboardTab({
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 min-h-[80vh] flex-1 w-full relative">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-6 min-h-[80vh] flex-1 w-full relative">
       {/* Map Column */}
-      <div className="xl:col-span-7 flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-500">
+      <div className="xl:col-span-7 flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-500 min-h-[400px] md:min-h-[500px] xl:min-h-0">
         <div className="flex-1 relative bg-slate-50">
           <Map onLocationSelect={handleLocationSelect} radius={scanRadius} mapCenter={mapCenter} selectedLocation={selectedLocation} />
         </div>
       </div>
 
       {/* Control Panel Column */}
-      <div className="xl:col-span-5 flex flex-col gap-6">
+      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6">
         
         {/* Mission Control Panel */}
-        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 hover:shadow-md transition-all duration-500">
-          <h2 className="font-bold uppercase tracking-widest text-xs text-slate-400 mb-6">Mission Control Panel</h2>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-5 md:p-8 hover:shadow-md transition-all duration-500">
+          <h2 className="font-bold uppercase tracking-widest text-[10px] md:text-xs text-slate-400 mb-4 md:mb-6">Mission Control Panel</h2>
           
-          <div className="flex items-center gap-8 mb-8">
-            <div className="relative w-24 h-24 shrink-0">
+          <div className="flex items-center gap-4 md:gap-8 mb-6 md:mb-8">
+            <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
               <motion.div 
                 animate={
                   currentStatus === 'standby' ? { scale: [1, 1.05, 1], opacity: [0.3, 0.5, 0.3] } :
