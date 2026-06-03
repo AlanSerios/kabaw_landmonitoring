@@ -4,6 +4,9 @@ import { MapContainer, TileLayer, Marker, useMapEvents, ZoomControl, Rectangle, 
 import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import L from "leaflet";
+import { useAppStore } from "@/store";
+import { MapTrifold, CaretDown, Plus } from "@phosphor-icons/react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Fix for default marker icon in Leaflet + Next.js
 const customIcon = new L.Icon({
@@ -19,14 +22,13 @@ const customIcon = new L.Icon({
 interface MapProps {
   onLocationSelect: (lat: number, lng: number) => void;
   radius?: number;
+  mapCenter?: { lat: number, lng: number } | null;
+  selectedLocation?: { lat: number, lng: number } | null;
 }
 
-function LocationMarker({ onLocationSelect, radius = 25 }: MapProps) {
-  const [position, setPosition] = useState<L.LatLng | null>(null);
-
+function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: MapProps) {
   useMapEvents({
     click(e) {
-      setPosition(e.latlng);
       onLocationSelect(e.latlng.lat, e.latlng.lng);
     }
   });
@@ -41,11 +43,11 @@ function LocationMarker({ onLocationSelect, radius = 25 }: MapProps) {
     ] as [number, number][];
   };
 
-  return position === null ? null : (
+  return !selectedLocation ? null : (
     <>
-      <Marker position={position} icon={customIcon} />
+      <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={customIcon} />
       <Rectangle 
-        bounds={getBounds(position.lat, position.lng)} 
+        bounds={getBounds(selectedLocation.lat, selectedLocation.lng)} 
         pathOptions={{ color: '#10b981', weight: 2, fillColor: '#10b981', fillOpacity: 0.2 }} 
       />
     </>
@@ -55,16 +57,121 @@ function LocationMarker({ onLocationSelect, radius = 25 }: MapProps) {
 function ResizeFix() {
   const map = useMap();
   useEffect(() => {
-    // Invalidate size after layout completes so Leaflet knows its true flexbox height
-    const timer = setTimeout(() => {
+    const observer = new ResizeObserver(() => {
       map.invalidateSize();
-    }, 500);
-    return () => clearTimeout(timer);
+    });
+    observer.observe(map.getContainer());
+    return () => observer.disconnect();
   }, [map]);
   return null;
 }
 
-export default function InteractiveMap({ onLocationSelect, radius = 25 }: MapProps) {
+function FlyToLocation({ center }: { center?: { lat: number, lng: number } | null }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (!center) return;
+    
+    let timeoutId: NodeJS.Timeout;
+    const currentZoom = map.getZoom();
+    
+    // If we're already fairly zoomed in, do a slight zoom out first
+    if (currentZoom > 9) {
+      map.setZoom(currentZoom - 2, { animate: true }); // Zoom out a bit
+      timeoutId = setTimeout(() => {
+        map.flyTo([center.lat, center.lng], 14, { duration: 2.5 });
+      }, 1000); // Wait for the zoom out to finish
+    } else {
+      // If already zoomed out, just fly directly
+      map.flyTo([center.lat, center.lng], 14, { duration: 2.5 });
+    }
+    
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [center, map]);
+  
+  return null;
+}
+
+function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
+  const { waypoints, addWaypoint, selectedLocation, mapCenter, setMapCenter, setLocationName } = useAppStore();
+  const [isOpen, setIsOpen] = useState(false);
+
+  const saveWaypoint = () => {
+    const targetLat = selectedLocation?.lat || mapCenter?.lat;
+    const targetLng = selectedLocation?.lng || mapCenter?.lng;
+    
+    if (targetLat && targetLng) {
+      const name = prompt("Enter a name for this waypoint:");
+      if (name) {
+        addWaypoint({ name, lat: targetLat, lng: targetLng });
+      }
+    } else {
+      alert("Please search for a location or click on the map to drop a pin before saving a waypoint.");
+    }
+    setIsOpen(false);
+  };
+
+  const loadWaypoint = (wp: any) => {
+    setLocationName(wp.name);
+    setMapCenter({ lat: wp.lat, lng: wp.lng }); // Force FlyToLocation to re-trigger
+    onLocationSelect(wp.lat, wp.lng);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="absolute top-4 right-4 z-[400]">
+      <div className="relative">
+        <button 
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 shadow-lg rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-95"
+        >
+          <MapTrifold weight="duotone" className="w-4 h-4 text-emerald-600" />
+          Waypoints
+          <CaretDown weight="bold" className={`w-3 h-3 ml-1 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: 5 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0, y: 5 }} 
+              className="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 p-2 min-w-[200px] overflow-hidden"
+            >
+              <div className="max-h-48 overflow-y-auto">
+                {waypoints.length === 0 ? (
+                  <div className="px-3 py-2 text-xs font-medium text-slate-400 text-center">No saved waypoints</div>
+                ) : (
+                  waypoints.map(wp => (
+                    <button 
+                      key={wp.id} 
+                      onClick={() => loadWaypoint(wp)}
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 rounded-lg transition-colors truncate"
+                    >
+                      {wp.name}
+                    </button>
+                  ))
+                )}
+              </div>
+              <div className="pt-2 mt-2 border-t border-slate-100">
+                <button 
+                  onClick={saveWaypoint}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 rounded-lg text-xs font-bold transition-colors"
+                >
+                  <Plus weight="bold" className="w-3 h-3" /> Add Current View
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
+
+export default function InteractiveMap({ onLocationSelect, radius = 25, mapCenter, selectedLocation }: MapProps) {
   // Default center roughly over Mindanao
   const defaultCenter: L.LatLngExpression = [8.4772, 124.6459];
 
@@ -87,9 +194,11 @@ export default function InteractiveMap({ onLocationSelect, radius = 25 }: MapPro
           keepBuffer={4}
         />
         <ZoomControl position="bottomright" />
-        <LocationMarker onLocationSelect={onLocationSelect} radius={radius} />
+        <LocationMarker onLocationSelect={onLocationSelect} radius={radius} selectedLocation={selectedLocation} />
+        <FlyToLocation center={mapCenter} />
         <ResizeFix />
       </MapContainer>
+      <WaypointsOverlay onLocationSelect={onLocationSelect} />
     </div>
   );
 }
