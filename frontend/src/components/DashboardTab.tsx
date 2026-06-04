@@ -136,28 +136,29 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
   };
 
   return (
-    <div className="flex flex-row-reverse items-end gap-0 pb-0 pr-3 md:pr-8">
-      {/* Mascot Graphic - Smaller on mobile */}
+    <div className="flex flex-row-reverse items-center gap-0 pb-0 pr-4 md:pr-8">
+      {/* Mascot Graphic - Scaled to a good small size, shifted down to peek from behind the card */}
       <motion.div 
         initial={{ y: "60%", x: "20%", opacity: 0 }}
-        animate={{ y: "20%", x: "10%", opacity: 1 }}
+        animate={{ y: "40%", x: "10%", opacity: 1 }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.8 }}
-        className="w-36 h-36 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+        className="w-52 h-52 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
         onClick={handleMascotClick}
       >
         <Image src="/uni_kuyawkabaw_mascot.svg" alt="Kuya Kabaw" fill className="object-contain object-bottom" />
       </motion.div>
       
-      {/* Chat Bubble with Typewriter Text */}
+      {/* SVG Bubble with Typewriter Text */}
       <motion.div 
         key={displayedMessage}
         initial={{ opacity: 0, scale: 0.95, x: 20, y: "10%" }}
-        animate={{ opacity: 1, scale: 1, x: 10, y: "0%" }}
+        animate={{ opacity: 1, scale: 1, x: 10, y: "30%" }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
-        className="relative max-w-[140px] md:max-w-[220px] shrink-0 z-10 -mr-1 md:-mr-4"
+        className="relative max-w-[160px] md:max-w-[220px] shrink-0 z-10 -mr-2 md:-mr-4"
       >
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl border border-gray-100/50 relative">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-4 shadow-2xl border border-gray-100/50 relative">
           <TypewriterText text={displayedMessage} />
+          {/* Chat bubble tail pointing right */}
           <div className="absolute top-1/2 -right-[10px] -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-l-[12px] border-l-white/95 border-b-[10px] border-b-transparent drop-shadow-md"></div>
         </div>
       </motion.div>
@@ -248,28 +249,28 @@ export default function DashboardTab({
   };
 
   return (
-    <div className="flex flex-col xl:grid xl:grid-cols-12 gap-4 md:gap-6 flex-1 w-full relative">
-      {/* Map Column — taller on desktop, shorter on mobile */}
-      <div className="xl:col-span-7 flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all duration-500 h-[220px] sm:h-[280px] md:h-[360px] xl:min-h-[80vh] relative z-10">
+    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-6 min-h-[80vh] flex-1 w-full relative">
+      {/* Map Column */}
+      <div className="xl:col-span-7 flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all duration-500 min-h-[400px] md:min-h-[500px] xl:min-h-0 relative z-10">
         <div className="flex-1 relative bg-slate-50 dark:bg-slate-900/50">
           <Map onLocationSelect={handleLocationSelect} radius={scanRadius} mapCenter={mapCenter} selectedLocation={selectedLocation} />
         </div>
       </div>
 
-      {/* Control Panel Column — sits BELOW map on mobile, beside on desktop */}
-      <div className="xl:col-span-5 flex flex-col gap-3 md:gap-6 xl:mt-32 relative z-20">
+      {/* Control Panel Column */}
+      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-56 md:mt-48 xl:mt-32 relative z-20">
         
-        {/* Kuya Kabaw Mascot — sits above the card on mobile */}
-        <div className="relative flex justify-end pr-2 xl:absolute xl:bottom-full xl:right-0 xl:z-[-1]">
+        {/* Kuya Kabaw Peeking Mascot */}
+        <div className="absolute bottom-full right-0 z-[-1]">
            <KuyaKabaw status={currentStatus as 'optimal' | 'warning' | 'error' | 'standby'} loading={loading} message={error} />
         </div>
 
         {/* Mission Control Panel */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 p-4 md:p-8 hover:shadow-md transition-all duration-500 relative z-10">
-          <h2 className="font-bold uppercase tracking-widest text-[10px] md:text-xs text-slate-400 mb-3 md:mb-6">KABAW Command Center</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-8 hover:shadow-md transition-all duration-500 relative z-10">
+          <h2 className="font-bold uppercase tracking-widest text-[10px] md:text-xs text-slate-400 mb-4 md:mb-6">KABAW Command Center</h2>
           
-          <div className="flex items-center gap-3 md:gap-8 mb-4 md:mb-8">
-            <div className="relative w-14 h-14 md:w-24 md:h-24 shrink-0">
+          <div className="flex items-center gap-4 md:gap-8 mb-6 md:mb-8">
+            <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
               <motion.div 
                 animate={
                   currentStatus === 'standby' ? { scale: [1, 1.05, 1], opacity: [0.3, 0.5, 0.3] } :
@@ -290,9 +291,9 @@ export default function DashboardTab({
               }`} />
             </div>
 
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-0.5">{t('status', language)}</div>
-              <div className={`text-xl md:text-2xl font-bold uppercase tracking-tight mb-1.5 ${
+            <div>
+              <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">{t('status', language)}</div>
+              <div className={`text-2xl font-bold uppercase tracking-tight mb-2 ${
                 currentStatus === 'optimal' ? 'text-emerald-600 dark:text-emerald-400' :
                 currentStatus === 'error' || currentStatus === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                 'text-slate-600 dark:text-slate-300'
