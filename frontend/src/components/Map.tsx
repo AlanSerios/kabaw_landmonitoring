@@ -121,7 +121,7 @@ function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number
   };
 
   return (
-    <div className="absolute top-4 right-4 z-[400]">
+    <>
       <div className="relative">
         <button 
           onClick={() => setIsOpen(!isOpen)}
@@ -167,24 +167,13 @@ function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </>
   );
 }
 
-function MagnetLocationButton({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
-  const { setMapCenter, setLocationName, addWaypoint } = useAppStore();
+function LocationButton({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
+  const { setMapCenter, setLocationName, addWaypoint, waypoints, removeWaypoint } = useAppStore();
   const [isLocating, setIsLocating] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-
-  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
-    const { clientX, clientY } = e;
-    const { height, width, left, top } = e.currentTarget.getBoundingClientRect();
-    const middleX = clientX - (left + width / 2);
-    const middleY = clientY - (top + height / 2);
-    setPosition({ x: middleX * 0.4, y: middleY * 0.4 });
-  };
-
-  const reset = () => setPosition({ x: 0, y: 0 });
 
   const handleLocate = () => {
     if (!navigator.geolocation) {
@@ -200,8 +189,14 @@ function MagnetLocationButton({ onLocationSelect }: { onLocationSelect: (lat: nu
         setMapCenter({ lat: latitude, lng: longitude });
         setLocationName("Where you are");
         
+        // Remove any existing instances to clean up duplicates and ensure fresh coordinates
+        waypoints.filter(wp => wp.name === "Where you are").forEach(wp => {
+          removeWaypoint(wp.id);
+        });
+        
         // Save as a waypoint automatically
         addWaypoint({ name: "Where you are", lat: latitude, lng: longitude });
+        
         setIsLocating(false);
       },
       (error) => {
@@ -213,36 +208,24 @@ function MagnetLocationButton({ onLocationSelect }: { onLocationSelect: (lat: nu
   };
 
   return (
-    <div className="absolute top-4 left-4 z-[400]">
-      <motion.button
-        onMouseMove={handleMouse}
-        onMouseLeave={reset}
+    <>
+      <button
         onClick={handleLocate}
-        animate={{ x: position.x, y: position.y }}
-        transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={`relative overflow-hidden flex items-center gap-2 px-4 py-2.5 bg-[#0a1c14] border border-[#153828] shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl text-sm font-bold text-white transition-shadow hover:shadow-[0_8px_30px_rgba(16,185,129,0.2)] ${isLocating ? 'opacity-80 pointer-events-none' : ''}`}
+        className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-slate-200 shadow-lg rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-all active:scale-95 ${isLocating ? 'opacity-70 pointer-events-none' : ''}`}
       >
-        <motion.div
-          className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent skew-x-12"
-          animate={{ translateX: ['-100%', '200%'] }}
-          transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
-        />
-        
         {isLocating ? (
           <motion.div
             animate={{ rotate: 360 }}
             transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
           >
-            <CircleNotch weight="bold" className="w-4 h-4 text-emerald-400" />
+            <CircleNotch weight="bold" className="w-4 h-4 text-emerald-600" />
           </motion.div>
         ) : (
-          <NavigationArrow weight="duotone" className="w-4 h-4 text-emerald-400" />
+          <NavigationArrow weight="duotone" className="w-4 h-4 text-emerald-600" />
         )}
-        <span className="relative z-10">{isLocating ? 'Locating...' : 'My Location'}</span>
-      </motion.button>
-    </div>
+        <span>{isLocating ? 'Locating...' : 'My Location'}</span>
+      </button>
+    </>
   );
 }
 
@@ -273,8 +256,10 @@ export default function InteractiveMap({ onLocationSelect, radius = 25, mapCente
         <FlyToLocation center={mapCenter} />
         <ResizeFix />
       </MapContainer>
-      <WaypointsOverlay onLocationSelect={onLocationSelect} />
-      <MagnetLocationButton onLocationSelect={onLocationSelect} />
+      <div className="absolute top-4 right-4 z-[400] flex flex-col gap-2 items-end">
+        <LocationButton onLocationSelect={onLocationSelect} />
+        <WaypointsOverlay onLocationSelect={onLocationSelect} />
+      </div>
     </div>
   );
 }

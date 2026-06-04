@@ -9,7 +9,7 @@ export type Waypoint = {
   dateAdded: string;
 };
 
-export type TabId = 'dashboard' | 'missions' | 'map' | 'analytics' | 'reports' | 'settings';
+export type TabId = 'dashboard' | 'missions' | 'map' | 'analytics' | 'reports';
 
 interface AppState {
   // Navigation

@@ -14,7 +14,6 @@ import { useDebouncedCallback } from 'use-debounce';
 import DashboardTab from "@/components/DashboardTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import ReportsTab from "@/components/ReportsTab";
-import SettingsTab from "@/components/SettingsTab";
 
 // Tab Navigation Component
 const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: string }) => {
@@ -42,6 +41,52 @@ const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: strin
     </a>
   );
 };
+
+// Small Settings Popover (replaces the massive SettingsTab)
+function SettingsPopover() {
+  const { scanRadius, setScanRadius } = useAppStore();
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-8 h-8 md:w-10 md:h-10 bg-white/60 backdrop-blur-xl border border-slate-200/50 shadow-sm rounded-full flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-colors"
+      >
+        <Gear weight="duotone" className="w-4 h-4 md:w-5 md:h-5" />
+      </button>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-[10000]"
+          >
+            <div className="flex items-center gap-2 mb-4">
+              <Gear weight="duotone" className="w-4 h-4 text-emerald-600" />
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Preferences</span>
+            </div>
+            
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-bold text-slate-700">Scan Radius</label>
+                <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{scanRadius}m</span>
+              </div>
+              <input 
+                type="range" min="10" max="250" step="5"
+                value={scanRadius} onChange={(e) => setScanRadius(parseInt(e.target.value))}
+                className="w-full accent-emerald-500 cursor-pointer mt-2"
+              />
+              <p className="text-[10px] font-medium text-slate-400 mt-1 leading-tight">Radius (in meters) to scan around the central coordinates.</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Home() {
   // Global State
@@ -201,7 +246,6 @@ export default function Home() {
           <NavItem id="dashboard" icon={SquaresFour} label="Dashboard" />
           <NavItem id="analytics" icon={ChartLineUp} label="Analytics" />
           <NavItem id="reports" icon={FileText} label="Reports" />
-          <NavItem id="settings" icon={Gear} label="Settings" />
         </nav>
 
         <div className="p-6 border-t border-[#153828] flex items-center gap-3 hover:bg-white/5 transition-all duration-300 cursor-pointer active:scale-95 w-64">
@@ -283,6 +327,9 @@ export default function Home() {
                 </span>
               </div>
             </div>
+            
+            {/* Settings Popover Button */}
+            <SettingsPopover />
           </div>
         </header>
 
@@ -305,9 +352,6 @@ export default function Home() {
             <ReportsTab />
           </section>
 
-          <section id="settings" className="w-full flex flex-col scroll-mt-24">
-            <SettingsTab />
-          </section>
           {/* Minimalistic Footer */}
           <footer className="w-full flex flex-col items-center justify-center pt-12 pb-12 mt-8 border-t border-slate-200/50">
             <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={32} height={32} className="opacity-50 hover:opacity-100 transition-opacity mb-4 drop-shadow-sm rounded-lg" />
@@ -329,10 +373,6 @@ export default function Home() {
           <a href="#reports" onClick={(e) => { e.preventDefault(); setActiveTab('reports'); document.getElementById('reports')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reports' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
             <FileText weight={activeTab === 'reports' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
             <span className="text-[10px] font-bold">Reports</span>
-          </a>
-          <a href="#settings" onClick={(e) => { e.preventDefault(); setActiveTab('settings'); document.getElementById('settings')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'settings' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <Gear weight={activeTab === 'settings' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Settings</span>
           </a>
         </nav>
       </main>
