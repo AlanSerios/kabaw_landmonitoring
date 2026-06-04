@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import L from "leaflet";
 import { useAppStore } from "@/store";
-import { MapTrifold, CaretDown, Plus } from "@phosphor-icons/react";
+import { MapTrifold, CaretDown, Plus, Crosshair, CircleNotch, NavigationArrow } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Fix for default marker icon in Leaflet + Next.js
@@ -171,6 +171,81 @@ function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number
   );
 }
 
+function MagnetLocationButton({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
+  const { setMapCenter, setLocationName, addWaypoint } = useAppStore();
+  const [isLocating, setIsLocating] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMouse = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const { clientX, clientY } = e;
+    const { height, width, left, top } = e.currentTarget.getBoundingClientRect();
+    const middleX = clientX - (left + width / 2);
+    const middleY = clientY - (top + height / 2);
+    setPosition({ x: middleX * 0.4, y: middleY * 0.4 });
+  };
+
+  const reset = () => setPosition({ x: 0, y: 0 });
+
+  const handleLocate = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        onLocationSelect(latitude, longitude);
+        setMapCenter({ lat: latitude, lng: longitude });
+        setLocationName("Where you are");
+        
+        // Save as a waypoint automatically
+        addWaypoint({ name: "Where you are", lat: latitude, lng: longitude });
+        setIsLocating(false);
+      },
+      (error) => {
+        alert("Unable to retrieve your location. Please check your browser permissions.");
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  return (
+    <div className="absolute top-4 left-4 z-[400]">
+      <motion.button
+        onMouseMove={handleMouse}
+        onMouseLeave={reset}
+        onClick={handleLocate}
+        animate={{ x: position.x, y: position.y }}
+        transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={`relative overflow-hidden flex items-center gap-2 px-4 py-2.5 bg-[#0a1c14] border border-[#153828] shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl text-sm font-bold text-white transition-shadow hover:shadow-[0_8px_30px_rgba(16,185,129,0.2)] ${isLocating ? 'opacity-80 pointer-events-none' : ''}`}
+      >
+        <motion.div
+          className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-emerald-400/20 to-transparent skew-x-12"
+          animate={{ translateX: ['-100%', '200%'] }}
+          transition={{ repeat: Infinity, duration: 3, ease: 'linear' }}
+        />
+        
+        {isLocating ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+          >
+            <CircleNotch weight="bold" className="w-4 h-4 text-emerald-400" />
+          </motion.div>
+        ) : (
+          <NavigationArrow weight="duotone" className="w-4 h-4 text-emerald-400" />
+        )}
+        <span className="relative z-10">{isLocating ? 'Locating...' : 'My Location'}</span>
+      </motion.button>
+    </div>
+  );
+}
+
 export default function InteractiveMap({ onLocationSelect, radius = 25, mapCenter, selectedLocation }: MapProps) {
   // Default center roughly over Mindanao
   const defaultCenter: L.LatLngExpression = [8.4772, 124.6459];
@@ -199,6 +274,7 @@ export default function InteractiveMap({ onLocationSelect, radius = 25, mapCente
         <ResizeFix />
       </MapContainer>
       <WaypointsOverlay onLocationSelect={onLocationSelect} />
+      <MagnetLocationButton onLocationSelect={onLocationSelect} />
     </div>
   );
 }
