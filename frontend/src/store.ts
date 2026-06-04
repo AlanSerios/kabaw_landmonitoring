@@ -42,6 +42,10 @@ interface AppState {
   // Analytics Timeframe
   timeframe: 'days' | 'months' | 'years';
   setTimeframe: (timeframe: 'days' | 'months' | 'years') => void;
+
+  // Language
+  language: 'en' | 'tl';
+  setLanguage: (lang: 'en' | 'tl') => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -88,11 +92,15 @@ export const useAppStore = create<AppState>()(
       // Analytics Timeframe
       timeframe: 'days',
       setTimeframe: (tf) => set({ timeframe: tf }),
+
+      // Language
+      language: 'en',
+      setLanguage: (lang) => set({ language: lang }),
     }),
     {
       name: 'kabaw-storage',
       // only persist waypoints and settings, not transient state like current tab or scan results
-      partialize: (state) => ({ waypoints: state.waypoints, scanRadius: state.scanRadius }),
+      partialize: (state) => ({ waypoints: state.waypoints, scanRadius: state.scanRadius, language: state.language }),
     }
   )
 );

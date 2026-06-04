@@ -2,15 +2,17 @@
 import { useState, useMemo } from "react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceLine, Area, AreaChart
+  ResponsiveContainer, ReferenceLine
 } from 'recharts';
 import { useAppStore } from "@/store";
 import { 
-  ChartLineUp, MapPin, Leaf, Drop, ArrowUp, ArrowDown
+  ChartLineUp, Leaf, Drop, ArrowUp, ArrowDown, Planet, CaretDown, Clock
 } from "@phosphor-icons/react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AreaChart, Area } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect } from "react";
 import { LoaderTwo } from "@/components/ui/unique-loader-components";
+import { t } from "@/lib/i18n";
 
 
 
@@ -54,21 +56,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export default function AnalyticsTab({ handleLocationSelect }: { handleLocationSelect?: (lat: number, lng: number) => void }) {
+export default function AnalyticsTab() {
   const { 
-    scanResult, setScanResult, 
-    selectedLocation, setSelectedLocation, 
-    locationName, setLocationName, 
-    waypoints,
-    timeframe, setTimeframe
+    scanResult, 
+    selectedLocation, 
+    locationName, 
+    timeframe, setTimeframe,
+    language
   } = useAppStore();
   const [activeMetric, setActiveMetric] = useState<'both' | 'ndvi' | 'ndwi'>('both');
+  const [isSimpleHistoryOpen, setIsSimpleHistoryOpen] = useState(false);
 
   const loadingTexts = [
-    "Looking for the Satellite...",
-    "Asking Kuya Manong...",
-    "Looking for KABAW...",
-    "Analyzing spectral data..."
+    "Naghahanap ng Satellite...",
+    "Nagtatanong kay Kuya Kabaw...",
+    "KABAW is working...",
+    "Sinusuri ang lupa..."
   ];
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
 
@@ -154,8 +157,8 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
             <ChartLineUp weight="duotone" className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Time-Series Analytics</div>
-            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">Historical Trends</h1>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">{t('analytics', language)}</div>
+            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">{t('analytics', language)}</h1>
           </div>
         </div>
       </div>
@@ -175,9 +178,9 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
                 <Leaf weight="duotone" className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Some historical data is unavailable</h4>
+                <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Walang nakuhang data mula sa satellite</h4>
                 <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5 leading-relaxed">
-                  Sentinel-2 was launched in mid-2015. Data prior to this date, or during periods of continuous heavy cloud cover, cannot be retrieved. <strong className="text-amber-900 dark:text-amber-300 font-bold">Missing periods are connected with a dashed yellow line</strong> to indicate no data was recorded during that time.
+                  Minsan ay hindi makita ng satellite ang lupa dahil sa makapal na ulap, o kaya'y bago pa lang ang satellite. <strong className="text-amber-900 dark:text-amber-300 font-bold">Ang dashed yellow line</strong> ay nangangahulugang walang record sa panahong iyon.
                 </p>
               </div>
             </div>
@@ -206,7 +209,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-tight">{scanResult.ndvi_score.toFixed(3)}</div>
-          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Vegetation Index</div>
+          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{t('cropHealth', language)}</div>
         </button>
 
         <button
@@ -230,14 +233,14 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
             </div>
           </div>
           <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-tight">{scanResult.ndwi_score.toFixed(3)}</div>
-          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Moisture Index</div>
+          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">{t('moistureLevel', language)}</div>
         </button>
       </div>
 
       {/* Chart controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mt-4 md:mt-6 gap-4">
         <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest text-center md:text-left">
-          {activeMetric === 'both' ? 'NDVI & NDWI' : activeMetric === 'ndvi' ? 'Vegetation (NDVI)' : 'Moisture (NDWI)'} over Time
+          {activeMetric === 'both' ? t('both', language) : activeMetric === 'ndvi' ? t('cropHealth', language) : t('moistureLevel', language)} {t('overTime', language)}
         </div>
         <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl mx-auto md:mx-0 w-full md:w-auto overflow-x-auto hide-scrollbar">
           {(['days', 'months', 'years'] as const).map((g) => (
@@ -253,13 +256,78 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
-              {g.charAt(0).toUpperCase() + g.slice(1)}
+              {t(g as 'days' | 'months' | 'years', language)}
             </button>
           ))}
         </div>
       </div>
+      
+      <div className="mt-8 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl p-6 shadow-sm overflow-hidden flex flex-col">
+        <button 
+          onClick={() => setIsSimpleHistoryOpen(!isSimpleHistoryOpen)}
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full text-left focus:outline-none group"
+        >
+          <div className="flex items-center gap-3">
+             <div className="w-10 h-10 shrink-0 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center">
+                <Clock weight="bold" className="w-5 h-5 text-emerald-600" />
+             </div>
+             <h3 className="font-bold text-slate-800 dark:text-slate-200 shrink-0 group-hover:text-emerald-500 transition-colors">{t('simpleHistory', language)}</h3>
+          </div>
+          <div className="flex items-center self-end sm:self-auto justify-end gap-3 w-full sm:w-auto">
+            <motion.div animate={{ rotate: isSimpleHistoryOpen ? 180 : 0 }} transition={{ type: 'spring', bounce: 0.5 }}>
+              <CaretDown weight="bold" className="w-5 h-5 text-slate-400 group-hover:text-emerald-500 transition-colors" />
+            </motion.div>
+          </div>
+        </button>
 
-      {/* Chart */}
+        <AnimatePresence initial={false}>
+          {isSimpleHistoryOpen && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+              className="overflow-hidden"
+            >
+              <div className="pt-6">
+                <div className="flex flex-wrap items-center justify-start gap-3 sm:gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-wider bg-slate-50 dark:bg-slate-700/80 p-2 sm:px-3 rounded-xl border border-slate-100 dark:border-slate-600 shadow-sm w-max max-w-full overflow-hidden mb-4">
+                  <span className="text-slate-400 mr-1 hidden sm:inline">{t('legend', language)}</span>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-inner shrink-0"></div> {t('healthy', language)}</div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-inner shrink-0"></div> {t('watered', language)}</div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-inner shrink-0"></div> {t('danger', language)}</div>
+                  <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-inner shrink-0"></div> {t('drought', language)}</div>
+                </div>
+                
+                <div className="w-full flex flex-nowrap gap-3 overflow-x-auto pb-4 pt-1 px-1">
+                  {data.filter((d: any) => d.ndvi !== null).map((d: any, idx: number) => {
+                    const isHealthy = d.ndvi > 0.4;
+                    const isWarning = d.ndvi >= 0.2 && d.ndvi <= 0.4;
+                    
+                    const isWaterHealthy = d.ndwi > 0.0;
+                    const isWaterWarning = d.ndwi > -0.2 && d.ndwi <= 0.0;
+                    
+                    return (
+                      <div key={idx} className="flex flex-col items-center gap-2 border border-slate-100 dark:border-slate-700 p-3 rounded-2xl shrink-0">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase">{d.label}</div>
+                        <div className="flex gap-2">
+                          <div className={`w-8 h-8 rounded-full shadow-inner flex items-center justify-center ${isHealthy ? 'bg-emerald-500' : isWarning ? 'bg-amber-500' : 'bg-rose-500'}`}>
+                            <Leaf weight="fill" className="w-4 h-4 text-white" />
+                          </div>
+                          <div className={`w-8 h-8 rounded-full shadow-inner flex items-center justify-center ${isWaterHealthy ? 'bg-blue-500' : isWaterWarning ? 'bg-amber-500' : 'bg-rose-500'}`}>
+                            <Drop weight="fill" className="w-4 h-4 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div className="w-2 shrink-0"></div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       <div className="mt-6 relative h-[300px] w-full" style={{ minHeight: '300px' }}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -310,7 +378,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
                     connectNulls={false}
                     dot={{ r: 3, strokeWidth: 2, fill: '#fff', stroke: '#10b981' }}
                     activeDot={{ r: 6, strokeWidth: 0, fill: '#10b981' }}
-                    name="NDVI (Vegetation)"
+                    name="NDVI (Kalusugan ng Tanim)"
                   />
                 )}
                 {(activeMetric === 'both' || activeMetric === 'ndvi') && (
@@ -336,7 +404,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
                     connectNulls={false}
                     dot={{ r: 3, strokeWidth: 2, fill: '#fff', stroke: '#3b82f6' }}
                     activeDot={{ r: 6, strokeWidth: 0, fill: '#3b82f6' }}
-                    name="NDWI (Moisture)"
+                    name="NDWI (Dami ng Tubig)"
                   />
                 )}
                 {(activeMetric === 'both' || activeMetric === 'ndwi') && (
@@ -359,14 +427,14 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
+      <div className="flex items-center gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap mt-4">
         <div className="flex items-center gap-2">
           <div className="w-6 h-0.5 bg-emerald-500 rounded-full" />
-          <span className="text-xs font-semibold text-slate-500">NDVI — Normalized Difference Vegetation Index</span>
+          <span className="text-xs font-semibold text-slate-500">NDVI — Vegetation Index</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-0.5 bg-blue-500 rounded-full" />
-          <span className="text-xs font-semibold text-slate-500">NDWI — Normalized Difference Water Index</span>
+          <span className="text-xs font-semibold text-slate-500">NDWI — Moisture Index</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-6 h-0 bg-transparent border-t-2 border-dashed border-yellow-500 rounded-full" />

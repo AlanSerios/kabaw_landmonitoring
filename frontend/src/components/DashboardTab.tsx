@@ -3,8 +3,168 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store";
 import dynamic from "next/dynamic";
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import { t } from "@/lib/i18n";
 
 const Map = dynamic(() => import("@/components/Map"), { ssr: false });
+
+const INTRO_MESSAGES = [
+  "Welcome sa KABAW Space! Ako si Kuya Kabaw, ang digital na kalabaw na nagbabantay sa kalusugan ng sakahan mo gamit ang satellites.",
+  "Uy, kumusta! Ako nga pala si Kuya Kabaw. Pindot ka lang sa map para ma-check natin 'yung sitwasyon ng sakahan mo.",
+  "Hello boss! Kuya Kabaw reporting for duty. Ano, silipin na ba natin 'yung mga pananim mo? Pindot ka lang diyan sa mapa.",
+  "Kumusta po! Ako si Kuya Kabaw. Tara, tignan natin ang lagay ng sakahan niyo ngayon gamit itong mapa."
+];
+
+const OPTIMAL_MESSAGES = [
+  "Lupit! Ang ganda ng tubo ng mga tanim mo ngayon. Sakto lang 'yung tubig, chill ka muna.",
+  "Aba, mukhang walang problema dito ah! Napaka-healthy ng mga pananim natin ngayon. Keep it up boss!",
+  "Ang lusog ng mga tanim! Hindi mo na kailangan masyadong mag-alala sa patubig ngayon. Nice work!"
+];
+
+const WARNING_MESSAGES = [
+  "Boss, medyo uhaw 'yung mga tanim natin ah. Kailangan na siguro natin magpadaloy ng tubig bago pa matuyo nang tuluyan.",
+  "Medyo dry na 'yung lupa natin dito. Ingat tayo, baka magkulang sa tubig 'yung mga halaman. Paandarin na ba ang patubig?",
+  "Naku, umiinit yata. Pansin ko medyo natutuyo ang lupa. Siguro oras na para diligin nang kaunti ang mga pananim natin."
+];
+
+const ERROR_MESSAGES = [
+  "Naku po, parang walang masyadong tumutubo dito o kaya sobrang tuyo na ng lupa. Check natin mabuti baka kailangan na ng matinding aksyon.",
+  "Hala, medyo critical tayo dito boss. Parang sobrang nipis ng mga tanim at tuyong-tuyo ang lupa. Baka kailangan nating ayusin 'yung irrigation natin.",
+  "Teka lang, parang hindi maganda ang lagay ng mga tanim dito. Kailangan natin tutukan ito, baka kailangan na agad ng tubig at pataba."
+];
+
+const LOADING_MESSAGES = [
+  "Wait lang boss, kinakausap ko pa yung satellite. Loading...",
+  "Teka lang ha, sinisilip ko pa ng mabuti 'yang area na 'yan...",
+  "Processing... konting tiis lang at malalaman din natin ang sagot."
+];
+
+const RANDOM_THOUGHTS = [
+  "Hmm, magandang panahon para magtanim kung hindi masyadong mainit ngayon...",
+  "Alam mo ba na ang kalabaw ay pawisan din? Pero kailangan pa rin namin ng putik pampalamig!",
+  "Sana sapat ang ulan mamaya, para hindi na tayo maghirap sa patubig.",
+  "Kung may problema sa tanim, wag mahihiyang pindutin ang mapa ha?",
+  "Naisip ko lang, ang sarap siguro humiga sa damuhan ngayon.",
+  "Check lang natin lagi yung kalusugan ng tanim para masaganang ani natin boss!"
+];
+
+const INTERACTIVE_MESSAGES = [
+  "Aray! Nakikiliti ako d'yan!",
+  "Moo! Laging handang tumulong si Kuya Kabaw.",
+  "Kailangan mo ba ng payo tungkol sa ani?",
+  "Basta agrikultura, sagot kita!",
+  "Pindot ka lang sa mapa kung may gusto kang suriin."
+];
+
+const TypewriterText = ({ text }: { text: string }) => {
+  const words = text.split(" ");
+  return (
+    <motion.div 
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { staggerChildren: 0.1, delayChildren: 0.3 }
+        }
+      }}
+      className="text-[10px] md:text-xs font-bold text-[#446e31] leading-snug tracking-tight text-center flex flex-wrap justify-center h-full items-center overflow-hidden"
+    >
+      <div>
+        {words.map((word, index) => (
+          <motion.span
+            key={index}
+            variants={{
+              hidden: { opacity: 0, y: 5 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="inline-block mr-1"
+          >
+            {word}
+          </motion.span>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// Kuya Kabaw Mascot Component
+function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'warning' | 'error' | 'standby'; type?: 'intro' | 'result'; message?: string; loading?: boolean }) {
+  const [displayedMessage, setDisplayedMessage] = useState("Welcome sa KABAW Space! Ako si Kuya Kabaw, ang digital na kalabaw na nagbabantay sa kalusugan ng sakahan mo gamit ang satellites.");
+
+  useEffect(() => {
+    if (message) {
+      setDisplayedMessage(message);
+      return;
+    }
+
+    if (loading) {
+      setDisplayedMessage(LOADING_MESSAGES[Math.floor(Math.random() * LOADING_MESSAGES.length)]);
+      return;
+    }
+
+    if (status && status !== 'standby') {
+      let pool = INTRO_MESSAGES;
+      if (status === 'optimal') pool = OPTIMAL_MESSAGES;
+      else if (status === 'warning') pool = WARNING_MESSAGES;
+      else if (status === 'error') pool = ERROR_MESSAGES;
+      
+      setDisplayedMessage(pool[Math.floor(Math.random() * pool.length)]);
+      return;
+    }
+
+    // Default intro message on load
+    if (type === 'intro' || status === 'standby') {
+      setDisplayedMessage(INTRO_MESSAGES[Math.floor(Math.random() * INTRO_MESSAGES.length)]);
+    }
+
+    // Random thoughts interval when idle
+    const timer = setInterval(() => {
+      if (!loading && (!status || status === 'standby')) {
+        if (Math.random() > 0.3) {
+          setDisplayedMessage(RANDOM_THOUGHTS[Math.floor(Math.random() * RANDOM_THOUGHTS.length)]);
+        }
+      }
+    }, 15000);
+
+    return () => clearInterval(timer);
+  }, [status, type, message, loading]);
+
+  const handleMascotClick = () => {
+    setDisplayedMessage(INTERACTIVE_MESSAGES[Math.floor(Math.random() * INTERACTIVE_MESSAGES.length)]);
+  };
+
+  return (
+    <div className="flex flex-row-reverse items-center gap-0 pb-0 pr-4 md:pr-8">
+      {/* Mascot Graphic - Scaled to a good small size, shifted down to peek from behind the card */}
+      <motion.div 
+        initial={{ y: "60%", x: "20%", opacity: 0 }}
+        animate={{ y: "40%", x: "10%", opacity: 1 }}
+        transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.8 }}
+        className="w-52 h-52 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+        onClick={handleMascotClick}
+      >
+        <Image src="/uni_kuyawkabaw_mascot.svg" alt="Kuya Kabaw" fill className="object-contain object-bottom" />
+      </motion.div>
+      
+      {/* SVG Bubble with Typewriter Text */}
+      <motion.div 
+        key={displayedMessage}
+        initial={{ opacity: 0, scale: 0.95, x: 20, y: "10%" }}
+        animate={{ opacity: 1, scale: 1, x: 10, y: "30%" }}
+        transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
+        className="relative max-w-[160px] md:max-w-[220px] shrink-0 z-10 -mr-2 md:-mr-4"
+      >
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-4 shadow-2xl border border-gray-100/50 relative">
+          <TypewriterText text={displayedMessage} />
+          {/* Chat bubble tail pointing right */}
+          <div className="absolute top-1/2 -right-[10px] -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-l-[12px] border-l-white/95 border-b-[10px] border-b-transparent drop-shadow-md"></div>
+        </div>
+      </motion.div>
+    </div>
+  );
+}
 
 // FlipCard component for animated 3D Bento reveals (Pure CSS)
 function FlipCard({ label, score, icon: Icon, color: statusColor, bg: statusBg, border: statusBorder, iconBg, actionable, science }: any) {
@@ -55,7 +215,7 @@ export default function DashboardTab({
   error: string; 
   handleLocationSelect: (lat: number, lng: number) => void;
 }) {
-  const { scanResult, mapCenter, scanRadius, selectedLocation } = useAppStore();
+  const { scanResult, mapCenter, scanRadius, selectedLocation, language } = useAppStore();
   const currentStatus = scanResult ? (scanResult.ndvi_score > 0.6 ? 'optimal' : scanResult.ndvi_score >= 0.3 ? 'warning' : 'error') : (error ? 'error' : 'standby');
   
   // Live clock — client-only to avoid SSR hydration mismatch
@@ -91,18 +251,23 @@ export default function DashboardTab({
   return (
     <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 md:gap-6 min-h-[80vh] flex-1 w-full relative">
       {/* Map Column */}
-      <div className="xl:col-span-7 flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all duration-500 min-h-[400px] md:min-h-[500px] xl:min-h-0">
+      <div className="xl:col-span-7 flex flex-col bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition-all duration-500 min-h-[400px] md:min-h-[500px] xl:min-h-0 relative z-10">
         <div className="flex-1 relative bg-slate-50 dark:bg-slate-900/50">
           <Map onLocationSelect={handleLocationSelect} radius={scanRadius} mapCenter={mapCenter} selectedLocation={selectedLocation} />
         </div>
       </div>
 
       {/* Control Panel Column */}
-      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6">
+      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-56 md:mt-48 xl:mt-32 relative z-20">
         
+        {/* Kuya Kabaw Peeking Mascot */}
+        <div className="absolute bottom-full right-0 z-[-1]">
+           <KuyaKabaw status={currentStatus as 'optimal' | 'warning' | 'error' | 'standby'} loading={loading} message={error} />
+        </div>
+
         {/* Mission Control Panel */}
-        <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-8 hover:shadow-md transition-all duration-500">
-          <h2 className="font-bold uppercase tracking-widest text-[10px] md:text-xs text-slate-400 mb-4 md:mb-6">Mission Control Panel</h2>
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-slate-200 dark:border-slate-800 p-5 md:p-8 hover:shadow-md transition-all duration-500 relative z-10">
+          <h2 className="font-bold uppercase tracking-widest text-[10px] md:text-xs text-slate-400 mb-4 md:mb-6">KABAW Command Center</h2>
           
           <div className="flex items-center gap-4 md:gap-8 mb-6 md:mb-8">
             <div className="relative w-16 h-16 md:w-24 md:h-24 shrink-0">
@@ -127,13 +292,13 @@ export default function DashboardTab({
             </div>
 
             <div>
-              <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Status</div>
+              <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">{t('status', language)}</div>
               <div className={`text-2xl font-bold uppercase tracking-tight mb-2 ${
                 currentStatus === 'optimal' ? 'text-emerald-600 dark:text-emerald-400' :
                 currentStatus === 'error' || currentStatus === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                 'text-slate-600 dark:text-slate-300'
               }`}>
-                {loading ? 'Scanning...' : currentStatus === 'standby' ? 'Awaiting Target' : currentStatus === 'optimal' ? 'Target Acquired' : 'Critical Warning'}
+                {loading ? t('analyzing', language) : currentStatus === 'standby' ? t('standby', language) : currentStatus === 'optimal' ? t('optimal', language) : t('warning', language)}
               </div>
               <div className="text-[10px] text-slate-500 dark:text-slate-400 font-mono tracking-wider bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700 inline-block">
                 SYS: <span className="text-emerald-500 dark:text-emerald-400 font-bold">ON</span> | {clockTime || '—'} UTC
@@ -148,11 +313,11 @@ export default function DashboardTab({
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-[1rem] bg-slate-800 text-white flex items-center justify-center shadow-md"><Globe weight="duotone" className="w-6 h-6" /></div>
                 <div>
-                  <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Primary Sensor</div>
+                  <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('primarySensor', language)}</div>
                   <div className="text-sm font-bold text-slate-700 dark:text-slate-200">SENTINEL-2 ORBITAL</div>
                 </div>
               </div>
-              <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200/50 dark:border-emerald-700/50">Online</div>
+              <div className="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider border border-emerald-200/50 dark:border-emerald-700/50">{t('online', language)}</div>
             </div>
             
             {/* Vegetation Flip Card */}
@@ -161,7 +326,7 @@ export default function DashboardTab({
               return status ? (
                 <FlipCard 
                   {...status}
-                  label="Vegetation"
+                  label={t('cropHealth', language)}
                   score={scanResult!.ndvi_score.toFixed(2)}
                   icon={Leaf}
                 />
@@ -169,10 +334,10 @@ export default function DashboardTab({
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between h-28 cursor-default">
                   <div className="flex justify-between items-start">
                     <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center"><Leaf weight="duotone" className="w-4 h-4" /></div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{loading ? 'Scanning...' : 'Standby'}</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{loading ? t('analyzing', language) : t('standby', language)}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Vegetation</div>
+                    <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('cropHealth', language)}</div>
                     <div className="text-xl font-black text-slate-300">--</div>
                   </div>
                 </div>
@@ -186,7 +351,7 @@ export default function DashboardTab({
               return status ? (
                 <FlipCard 
                   {...status}
-                  label="Moisture"
+                  label={t('moistureLevel', language)}
                   score={scanResult!.ndwi_score.toFixed(2)}
                   icon={Drop}
                 />
@@ -194,10 +359,10 @@ export default function DashboardTab({
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-2xl p-4 flex flex-col justify-between h-28 cursor-default">
                   <div className="flex justify-between items-start">
                     <div className="w-8 h-8 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center"><Drop weight="duotone" className="w-4 h-4" /></div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{loading ? 'Scanning...' : 'Standby'}</div>
+                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{loading ? t('analyzing', language) : t('standby', language)}</div>
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Moisture</div>
+                    <div className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">{t('moistureLevel', language)}</div>
                     <div className="text-xl font-black text-slate-300">--</div>
                   </div>
                 </div>
@@ -210,7 +375,7 @@ export default function DashboardTab({
         <AnimatePresence mode="wait">
           {!scanResult && !loading && !error && (
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="rounded-3xl border p-7 mb-2 bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700">
+              <div className="rounded-3xl border p-7 mb-2 mt-4 bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700">
                 <h2 className="font-bold uppercase tracking-widest text-xs flex items-center gap-2 text-slate-700 dark:text-slate-300 mb-3">
                   <Globe weight="bold" className="w-4 h-4" /> System Explanation
                 </h2>
@@ -227,33 +392,6 @@ export default function DashboardTab({
                     <span className="font-bold">NDWI (Moisture):</span> Detects surface water and irrigation levels.
                   </div>
                 </div>
-              </div>
-            </motion.div>
-          )}
-
-          {error && !loading && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="rounded-3xl border p-7 mb-2 bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800/50">
-                <h2 className="font-bold uppercase tracking-widest text-xs flex items-center gap-2 text-rose-700 dark:text-rose-400 mb-2">
-                  <Warning weight="bold" className="w-4 h-4" /> Error
-                </h2>
-                <p className="text-sm font-medium text-rose-700 dark:text-rose-400">{error}</p>
-              </div>
-            </motion.div>
-          )}
-          {scanResult && !loading && !error && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-              <div className="rounded-3xl border p-6 mb-2 bg-slate-50 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                    <Globe weight="duotone" className="w-5 h-5 text-emerald-600" />
-                  </div>
-                  <div>
-                    <h2 className="font-bold uppercase tracking-widest text-xs text-slate-700 dark:text-slate-300">Telemetry Acquired</h2>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Click the score cards above to view detailed analysis</p>
-                  </div>
-                </div>
-                <div className="px-3 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full text-xs font-bold uppercase tracking-wider">Optimal Signal</div>
               </div>
             </motion.div>
           )}

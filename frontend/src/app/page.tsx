@@ -10,6 +10,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, TabId } from "@/store";
 import { useDebouncedCallback } from 'use-debounce';
+import { t, LanguageCode } from "@/lib/i18n";
 
 import DashboardTab from "@/components/DashboardTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
@@ -45,7 +46,7 @@ const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: strin
 
 // Small Settings Popover (replaces the massive SettingsTab)
 function SettingsPopover() {
-  const { scanRadius, setScanRadius } = useAppStore();
+  const { scanRadius, setScanRadius, language, setLanguage } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -102,6 +103,20 @@ function SettingsPopover() {
                 </button>
               </div>
             )}
+
+            <hr className="my-3 border-slate-100 dark:border-slate-800" />
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Language</label>
+              <select 
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as any)}
+                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 outline-none focus:ring-2 focus:ring-emerald-500"
+              >
+                <option value="en">English (US)</option>
+                <option value="tl">Tagalog (PH)</option>
+              </select>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -119,7 +134,8 @@ export default function Home() {
     waypoints, addWaypoint,
     setScanResult,
     setLocationName,
-    timeframe
+    timeframe,
+    language
   } = useAppStore();
 
   // Local UI State
@@ -263,15 +279,24 @@ export default function Home() {
           <span className="font-black tracking-widest text-lg">KABAW</span>
         </div>
         
-        <nav className="flex-1 px-4 py-4 flex flex-col gap-2 w-64">
-          <NavItem id="dashboard" icon={SquaresFour} label="Dashboard" />
-          <NavItem id="analytics" icon={ChartLineUp} label="Analytics" />
-          <NavItem id="reports" icon={FileText} label="Reports" />
+        <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+          <NavItem id="dashboard" icon={SquaresFour} label={t('dashboard', language)} />
+          <NavItem id="analytics" icon={ChartLineUp} label={t('analytics', language)} />
+          <NavItem id="reports" icon={FileText} label={t('reports', language)} />
         </nav>
 
-        <div className="p-6 border-t border-[#153828] flex items-center gap-3 hover:bg-white/5 transition-all duration-300 cursor-pointer active:scale-95 w-64">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 font-bold text-xs shadow-inner shrink-0">AS</div>
-          <div className="text-sm font-bold text-white">Alan Serios</div>
+        {/* Bottom Section */}
+        <div className="p-4 border-t border-white/5 space-y-3">
+          <button 
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+          >
+            <Gear weight="regular" className="w-5 h-5 shrink-0" />
+            {t('settings', language)}
+          </button>
+          <div className="p-6 border-t border-[#153828] flex items-center gap-3 hover:bg-white/5 transition-all duration-300 cursor-pointer active:scale-95 w-64">
+            <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/50 flex items-center justify-center text-emerald-400 font-bold text-xs shadow-inner shrink-0">AS</div>
+            <div className="text-sm font-bold text-white">Alan Serios</div>
+          </div>
         </div>
       </aside>
 
@@ -283,9 +308,11 @@ export default function Home() {
           {/* LEFT: Menu & Title */}
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px]">
             <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
-            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-slate-100 hidden sm:block">
-              {activeTab === 'dashboard' ? 'KABAW' : activeTab === 'analytics' ? 'Analytics' : activeTab === 'reports' ? 'Reports' : 'Settings'}
-            </h1>
+            <div className="hidden md:block flex-shrink-0">
+            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              {activeTab === 'dashboard' ? t('dashboard', language) : activeTab === 'analytics' ? t('analytics', language) : activeTab === 'reports' ? t('reports', language) : t('settings', language)}
+            </h2>
+          </div>
           </div>
 
           {/* CENTER: Global Search */}
@@ -366,7 +393,7 @@ export default function Home() {
           </section>
 
           <section id="analytics" className="w-full flex flex-col scroll-mt-24">
-            <AnalyticsTab handleLocationSelect={handleLocationSelect} />
+            <AnalyticsTab />
           </section>
 
           <section id="reports" className="w-full flex flex-col scroll-mt-24">
