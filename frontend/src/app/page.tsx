@@ -303,11 +303,11 @@ export default function Home() {
       {/* Main Content Area (Bento 2.0 Light Aesthetic) */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header (z-[9999] to stay above Leaflet map) */}
-        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between shrink-0 relative z-[9999] gap-4 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
+        <header className="px-3 md:px-8 py-3 md:py-6 flex items-center justify-between shrink-0 relative z-[9999] gap-2 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           
-          {/* LEFT: Menu & Title */}
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px]">
-            <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
+          {/* LEFT: Logo only on mobile, logo+title on desktop */}
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+            <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[30px] h-[30px] md:w-[48px] md:h-[48px]" loading="eager" />
             <div className="hidden md:block flex-shrink-0">
             <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
               {activeTab === 'dashboard' ? t('dashboard', language) : activeTab === 'analytics' ? t('analytics', language) : activeTab === 'reports' ? t('reports', language) : t('settings', language)}
@@ -361,15 +361,15 @@ export default function Home() {
           {/* RIGHT: Controls */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* Live AQI Widget */}
-            <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
+            <div className="flex items-center gap-1 md:gap-3 px-2.5 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
               <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">AIR QUALITY</span>
               <div className="w-px h-3 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
-              <div className="flex items-center gap-1.5 md:gap-2">
+              <div className="flex items-center gap-1 md:gap-2">
                 <div className="relative flex h-2 w-2">
                   <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
                   <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
                 </div>
-                <span className="inline-block min-w-[35px] md:min-w-[45px]">AQI {aqi ?? '--'}</span>
+                <span className="inline-block">AQI {aqi ?? '--'}</span>
                 <span className={`font-bold hidden md:inline ${!aqi ? 'text-slate-400' : aqi <= 50 ? 'text-emerald-600 dark:text-emerald-400' : aqi <= 100 ? 'text-yellow-600 dark:text-yellow-400' : aqi <= 150 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>
                   {!aqi ? 'LOAD' : aqi <= 50 ? 'GOOD' : aqi <= 100 ? 'MODERATE' : aqi <= 150 ? 'UNHEALTHY' : 'DANGER'}
                 </span>
@@ -382,7 +382,7 @@ export default function Home() {
         </header>
 
         {/* Scrolling One-Page Content */}
-        <div className="flex-1 overflow-y-auto px-4 md:px-8 pb-24 md:pb-8 pt-4 md:pt-6 relative z-10 flex flex-col gap-8 md:gap-12 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-3 md:px-8 pb-24 md:pb-8 pt-3 md:pt-6 relative z-10 flex flex-col gap-5 md:gap-12 scroll-smooth">
           
           <section id="dashboard" className="w-full flex flex-col scroll-mt-24">
             <DashboardTab 
@@ -409,17 +409,17 @@ export default function Home() {
         </div>
         
         {/* Mobile Bottom Navigation (Strictly Hidden on Desktop) */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a1c14] border-t border-[#153828] flex items-center justify-around px-2 py-2 pb-6 z-[10000] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
-          <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <SquaresFour weight={activeTab === 'dashboard' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a1c14] border-t border-[#153828] flex items-center justify-around px-4 pt-2 pb-safe z-[10000] shadow-[0_-10px_40px_rgba(0,0,0,0.4)]" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+          <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
+            <SquaresFour weight={activeTab === 'dashboard' ? "duotone" : "regular"} className="w-6 h-6 mb-0.5" />
             <span className="text-[10px] font-bold">Home</span>
           </a>
-          <a href="#analytics" onClick={(e) => { e.preventDefault(); setActiveTab('analytics'); document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'analytics' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <ChartLineUp weight={activeTab === 'analytics' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
+          <a href="#analytics" onClick={(e) => { e.preventDefault(); setActiveTab('analytics'); document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${activeTab === 'analytics' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
+            <ChartLineUp weight={activeTab === 'analytics' ? "duotone" : "regular"} className="w-6 h-6 mb-0.5" />
             <span className="text-[10px] font-bold">Analytics</span>
           </a>
-          <a href="#reports" onClick={(e) => { e.preventDefault(); setActiveTab('reports'); document.getElementById('reports')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reports' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <FileText weight={activeTab === 'reports' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
+          <a href="#reports" onClick={(e) => { e.preventDefault(); setActiveTab('reports'); document.getElementById('reports')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center py-2 px-4 rounded-xl transition-all ${activeTab === 'reports' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
+            <FileText weight={activeTab === 'reports' ? "duotone" : "regular"} className="w-6 h-6 mb-0.5" />
             <span className="text-[10px] font-bold">Reports</span>
           </a>
         </nav>
