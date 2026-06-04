@@ -9,6 +9,8 @@ import {
   ChartLineUp, MapPin, Leaf, Drop, ArrowUp, ArrowDown
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect } from "react";
+import { LoaderTwo } from "@/components/ui/unique-loader-components";
 
 
 
@@ -18,12 +20,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     // If the payload is empty or ONLY contains artificial gap lines, it's a missing data point
     if (!payload || payload.length === 0 || payload.every((entry: any) => entry.dataKey.includes('_gap'))) {
       return (
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-xl p-4 min-w-[180px]">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-4 min-w-[180px]">
           <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{label}</div>
           <div className="flex items-center gap-2 mb-1.5">
             <div className="w-2 h-2 rounded-full bg-yellow-500" />
-            <span className="text-xs font-bold text-slate-600">Status:</span>
-            <span className="text-xs font-black text-amber-600">
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Status:</span>
+            <span className="text-xs font-black text-amber-600 dark:text-amber-400">
               No Data Recorded
             </span>
           </div>
@@ -35,12 +37,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     const filteredPayload = payload.filter((entry: any) => !entry.dataKey.includes('_gap'));
     
     return (
-      <div className="bg-white border border-slate-200 rounded-2xl shadow-xl p-4 min-w-[180px]">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl p-4 min-w-[180px]">
         <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">{label}</div>
         {filteredPayload.map((entry: any) => (
           <div key={entry.dataKey} className="flex items-center gap-2 mb-1.5">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span className="text-xs font-bold text-slate-600">{entry.name}:</span>
+            <span className="text-xs font-bold text-slate-600 dark:text-slate-400">{entry.name}:</span>
             <span className="text-xs font-black" style={{ color: entry.color }}>
               {typeof entry.value === 'number' ? entry.value.toFixed(3) : entry.value}
             </span>
@@ -61,6 +63,23 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
     timeframe, setTimeframe
   } = useAppStore();
   const [activeMetric, setActiveMetric] = useState<'both' | 'ndvi' | 'ndwi'>('both');
+
+  const loadingTexts = [
+    "Looking for the Satellite...",
+    "Asking Kuya Manong...",
+    "Looking for KABAW...",
+    "Analyzing spectral data..."
+  ];
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  useEffect(() => {
+    if (!scanResult) {
+      const interval = setInterval(() => {
+        setLoadingTextIndex(prev => (prev + 1) % loadingTexts.length);
+      }, 2500);
+      return () => clearInterval(interval);
+    }
+  }, [scanResult]);
 
 
   const data = useMemo(() => {
@@ -126,7 +145,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
     : 'Unknown Location');
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8 min-h-[80vh] flex flex-col gap-6 overflow-y-auto">
+    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-800 p-8 min-h-[80vh] flex flex-col gap-6 overflow-y-auto">
       
       {/* Header */}
       <div className="flex items-start justify-between">
@@ -136,37 +155,29 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
           </div>
           <div>
             <div className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Time-Series Analytics</div>
-            <h1 className="text-xl font-black text-slate-900">Historical Trends</h1>
+            <h1 className="text-xl font-black text-slate-900 dark:text-slate-100">Historical Trends</h1>
           </div>
         </div>
       </div>
 
       {!scanResult ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-6 min-h-[400px]">
-          <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center">
-            <motion.div 
-              animate={{ rotate: 360 }} 
-              transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-            >
-              <ChartLineUp weight="duotone" className="w-8 h-8 text-slate-400" />
-            </motion.div>
-          </div>
-          <div className="text-center">
-            <h3 className="font-bold text-slate-800 mb-1">Awaiting Telemetry</h3>
-            <p className="text-sm text-slate-400 max-w-xs">Connecting to Sentinel-2 and processing historical imagery. This may take a few seconds...</p>
+          <div className="flex flex-col items-center gap-4">
+            <LoaderTwo />
+            <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm mt-4">{loadingTexts[loadingTextIndex]}</h3>
           </div>
         </div>
       ) : (
         <>
           {hasMissingData && (
-            <div className="bg-amber-50 border border-amber-200/60 rounded-2xl p-4 flex items-start gap-3 mt-[-10px]">
-              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200/60 dark:border-amber-800/50 rounded-2xl p-4 flex items-start gap-3 mt-[-10px]">
+              <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
                 <Leaf weight="duotone" className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <h4 className="text-sm font-bold text-amber-900">Some historical data is unavailable</h4>
-                <p className="text-xs text-amber-700/80 mt-0.5 leading-relaxed">
-                  Sentinel-2 was launched in mid-2015. Data prior to this date, or during periods of continuous heavy cloud cover, cannot be retrieved. <strong className="text-amber-900 font-bold">Missing periods are connected with a dashed yellow line</strong> to indicate no data was recorded during that time.
+                <h4 className="text-sm font-bold text-amber-900 dark:text-amber-300">Some historical data is unavailable</h4>
+                <p className="text-xs text-amber-700/80 dark:text-amber-400/80 mt-0.5 leading-relaxed">
+                  Sentinel-2 was launched in mid-2015. Data prior to this date, or during periods of continuous heavy cloud cover, cannot be retrieved. <strong className="text-amber-900 dark:text-amber-300 font-bold">Missing periods are connected with a dashed yellow line</strong> to indicate no data was recorded during that time.
                 </p>
               </div>
             </div>
@@ -176,50 +187,50 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
           <div className="grid grid-cols-2 gap-3 md:gap-4">
         <button
           onClick={() => setActiveMetric(activeMetric === 'ndvi' ? 'both' : 'ndvi')}
-          className={`rounded-2xl p-5 border transition-all duration-300 text-left ${
+          className={`rounded-2xl p-4 sm:p-5 border transition-all duration-300 text-left ${
             activeMetric === 'ndwi' ? 'opacity-40' : 
-            activeMetric === 'ndvi' ? 'bg-emerald-50 border-emerald-300 shadow-md' :
-            'bg-slate-50 border-slate-200/50 hover:shadow-md hover:border-emerald-200'
+            activeMetric === 'ndvi' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-700/50 shadow-md' :
+            'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 hover:shadow-md hover:border-emerald-200 dark:hover:border-emerald-700/50'
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0">
                 <Leaf weight="fill" className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">NDVI</span>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-500">NDVI</span>
             </div>
             <div className={`flex items-center gap-1 text-xs font-bold ${ndviTrend >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
-              {ndviTrend >= 0 ? <ArrowUp weight="bold" className="w-3 h-3" /> : <ArrowDown weight="bold" className="w-3 h-3" />}
+              {ndviTrend >= 0 ? <ArrowUp weight="bold" className="w-3 h-3 shrink-0" /> : <ArrowDown weight="bold" className="w-3 h-3 shrink-0" />}
               {ndviTrend >= 0 ? '+' : ''}{ndviTrend.toFixed(3)}
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900">{scanResult.ndvi_score.toFixed(3)}</div>
-          <div className="text-xs text-slate-500 mt-1 font-medium">Vegetation Index</div>
+          <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-tight">{scanResult.ndvi_score.toFixed(3)}</div>
+          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Vegetation Index</div>
         </button>
 
         <button
           onClick={() => setActiveMetric(activeMetric === 'ndwi' ? 'both' : 'ndwi')}
-          className={`rounded-2xl p-5 border transition-all duration-300 text-left ${
+          className={`rounded-2xl p-4 sm:p-5 border transition-all duration-300 text-left ${
             activeMetric === 'ndvi' ? 'opacity-40' : 
-            activeMetric === 'ndwi' ? 'bg-blue-50 border-blue-300 shadow-md' :
-            'bg-slate-50 border-slate-200/50 hover:shadow-md hover:border-blue-200'
+            activeMetric === 'ndwi' ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700/50 shadow-md' :
+            'bg-slate-50 dark:bg-slate-800/50 border-slate-200/50 dark:border-slate-700/50 hover:shadow-md hover:border-blue-200 dark:hover:border-blue-700/50'
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-500 text-white flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-blue-500 text-white flex items-center justify-center shrink-0">
                 <Drop weight="fill" className="w-3.5 h-3.5" />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">NDWI</span>
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-widest text-slate-500">NDWI</span>
             </div>
             <div className={`flex items-center gap-1 text-xs font-bold ${ndwiTrend >= 0 ? 'text-blue-600' : 'text-rose-500'}`}>
-              {ndwiTrend >= 0 ? <ArrowUp weight="bold" className="w-3 h-3" /> : <ArrowDown weight="bold" className="w-3 h-3" />}
+              {ndwiTrend >= 0 ? <ArrowUp weight="bold" className="w-3 h-3 shrink-0" /> : <ArrowDown weight="bold" className="w-3 h-3 shrink-0" />}
               {ndwiTrend >= 0 ? '+' : ''}{ndwiTrend.toFixed(3)}
             </div>
           </div>
-          <div className="text-2xl font-black text-slate-900">{scanResult.ndwi_score.toFixed(3)}</div>
-          <div className="text-xs text-slate-500 mt-1 font-medium">Moisture Index</div>
+          <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 leading-tight">{scanResult.ndwi_score.toFixed(3)}</div>
+          <div className="text-[11px] sm:text-xs text-slate-500 mt-1 font-medium leading-tight whitespace-nowrap overflow-hidden text-ellipsis">Moisture Index</div>
         </button>
       </div>
 
@@ -228,7 +239,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
         <div className="text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest text-center md:text-left">
           {activeMetric === 'both' ? 'NDVI & NDWI' : activeMetric === 'ndvi' ? 'Vegetation (NDVI)' : 'Moisture (NDWI)'} over Time
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl mx-auto md:mx-0 w-full md:w-auto overflow-x-auto hide-scrollbar">
+        <div className="flex bg-slate-100 dark:bg-slate-800/50 p-1 rounded-xl mx-auto md:mx-0 w-full md:w-auto overflow-x-auto hide-scrollbar">
           {(['days', 'months', 'years'] as const).map((g) => (
             <button
               key={g}
@@ -238,8 +249,8 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
               }}
               className={`flex-1 md:flex-none px-3 md:px-4 py-2 md:py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 timeframe === g 
-                ? 'bg-white text-emerald-600 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
               }`}
             >
               {g.charAt(0).toUpperCase() + g.slice(1)}
@@ -348,7 +359,7 @@ export default function AnalyticsTab({ handleLocationSelect }: { handleLocationS
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-6 pt-2 border-t border-slate-100 flex-wrap">
+      <div className="flex items-center gap-6 pt-2 border-t border-slate-100 dark:border-slate-800 flex-wrap">
         <div className="flex items-center gap-2">
           <div className="w-6 h-0.5 bg-emerald-500 rounded-full" />
           <span className="text-xs font-semibold text-slate-500">NDVI — Normalized Difference Vegetation Index</span>

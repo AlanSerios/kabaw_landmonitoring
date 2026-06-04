@@ -14,6 +14,7 @@ import { useDebouncedCallback } from 'use-debounce';
 import DashboardTab from "@/components/DashboardTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import ReportsTab from "@/components/ReportsTab";
+import { useTheme } from "next-themes";
 
 // Tab Navigation Component
 const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: string }) => {
@@ -46,12 +47,18 @@ const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: strin
 function SettingsPopover() {
   const { scanRadius, setScanRadius } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="w-8 h-8 md:w-10 md:h-10 bg-white/60 backdrop-blur-xl border border-slate-200/50 shadow-sm rounded-full flex items-center justify-center text-slate-500 hover:text-emerald-600 transition-colors"
+        className="w-8 h-8 md:w-10 md:h-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 shadow-sm rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-500 transition-colors"
       >
         <Gear weight="duotone" className="w-4 h-4 md:w-5 md:h-5" />
       </button>
@@ -62,25 +69,39 @@ function SettingsPopover() {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-[10000]"
+            className="absolute top-full right-0 mt-3 w-64 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 p-4 z-[10000]"
           >
             <div className="flex items-center gap-2 mb-4">
               <Gear weight="duotone" className="w-4 h-4 text-emerald-600" />
-              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Preferences</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-400">Preferences</span>
             </div>
             
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <label className="text-sm font-bold text-slate-700">Scan Radius</label>
-                <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md">{scanRadius}m</span>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Scan Radius</label>
+                <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-md">{scanRadius}m</span>
               </div>
               <input 
                 type="range" min="10" max="250" step="5"
                 value={scanRadius} onChange={(e) => setScanRadius(parseInt(e.target.value))}
                 className="w-full accent-emerald-500 cursor-pointer mt-2"
               />
-              <p className="text-[10px] font-medium text-slate-400 mt-1 leading-tight">Radius (in meters) to scan around the central coordinates.</p>
+              <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-1 leading-tight">Radius (in meters) to scan around the central coordinates.</p>
             </div>
+
+            <hr className="my-3 border-slate-100 dark:border-slate-800" />
+            
+            {mounted && (
+              <div className="flex items-center justify-between mt-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Dark Mode</label>
+                <button
+                  onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ease-in-out ${resolvedTheme === 'dark' ? 'bg-emerald-500' : 'bg-slate-300'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300 ease-in-out ${resolvedTheme === 'dark' ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -231,11 +252,11 @@ export default function Home() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f9fafb] font-sans text-slate-900">
+    <div className="flex h-screen overflow-hidden bg-[#f9fafb] dark:bg-[#0f1115] font-sans text-slate-900 dark:text-slate-100 transition-colors duration-300">
       
       {/* Sidebar (Deep Forest / Premium Contrast) - Using pure CSS for bulletproof reliability */}
       <aside 
-        className={`bg-[#0a1c14] flex flex-col shrink-0 border-[#153828] overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64 opacity-100 border-r' : 'w-0 opacity-0 border-r-0'}`}
+        className={`bg-[#0a1c14] dark:bg-[#050e0a] flex flex-col shrink-0 border-[#153828] dark:border-[#0f291c] overflow-hidden whitespace-nowrap transition-all duration-300 ease-in-out ${isSidebarOpen ? 'w-64 opacity-100 border-r' : 'w-0 opacity-0 border-r-0'}`}
       >
         <div className="p-6 flex items-center gap-3 text-white w-64">
           <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={28} height={28} className="shrink-0" />
@@ -257,12 +278,12 @@ export default function Home() {
       {/* Main Content Area (Bento 2.0 Light Aesthetic) */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header (z-[9999] to stay above Leaflet map) */}
-        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between shrink-0 relative z-[9999] gap-4 md:gap-6 bg-[#f9fafb]/80 backdrop-blur-md border-b border-slate-200/60">
+        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between shrink-0 relative z-[9999] gap-4 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           
           {/* LEFT: Menu & Title */}
           <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px]">
             <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
-            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-slate-900 hidden sm:block">
+            <h1 className="text-xl md:text-2xl font-black uppercase tracking-tighter text-slate-900 dark:text-slate-100 hidden sm:block">
               {activeTab === 'dashboard' ? 'KABAW' : activeTab === 'analytics' ? 'Analytics' : activeTab === 'reports' ? 'Reports' : 'Settings'}
             </h1>
           </div>
@@ -279,7 +300,7 @@ export default function Home() {
                 onChange={handleSearchInput}
                 onFocus={() => { if (searchResults.length > 0) setShowSearchResults(true); }}
                 aria-label="Search for a location"
-                className="pl-9 md:pl-11 pr-3 md:pr-4 py-2.5 md:py-3 rounded-xl border border-slate-200 shadow-sm text-sm w-full bg-white outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-medium relative z-0" 
+                className="pl-9 md:pl-11 pr-3 md:pr-4 py-2.5 md:py-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm text-sm w-full bg-white dark:bg-slate-900 outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all duration-300 font-bold text-slate-900 dark:text-slate-100 placeholder:text-slate-400 relative z-0" 
               />
               <MagnifyingGlass weight="bold" className="w-4 h-4 md:w-5 md:h-5 absolute left-3 md:left-4 text-slate-400 group-focus-within:text-emerald-600 transition-colors pointer-events-none z-10" />
             </form>
@@ -290,7 +311,7 @@ export default function Home() {
                   initial={{ opacity: 0, y: 5 }} 
                   animate={{ opacity: 1, y: 0 }} 
                   exit={{ opacity: 0, y: 5 }} 
-                  className="absolute top-full left-0 mt-2 w-full bg-white rounded-xl shadow-xl border border-slate-200 p-2 overflow-hidden"
+                  className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden"
                 >
                   {searchResults.length === 0 ? (
                     <div className="p-3 text-xs text-slate-400 text-center font-medium">No results found</div>
@@ -299,7 +320,7 @@ export default function Home() {
                       <button 
                         key={i} 
                         onClick={() => selectSearchResult(res)} 
-                        className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold text-slate-700 hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0 truncate"
+                        className="w-full text-left px-3 py-2.5 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-50 dark:border-slate-800 last:border-0 truncate"
                       >
                         {res.display_name}
                       </button>
@@ -313,16 +334,16 @@ export default function Home() {
           {/* RIGHT: Controls */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {/* Live AQI Widget */}
-            <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 backdrop-blur-xl rounded-full border border-slate-200/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800">
-              <span className="text-slate-500 hidden sm:inline">AIR QUALITY</span>
-              <div className="w-px h-3 bg-slate-300 hidden sm:block"></div>
+            <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
+              <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">AIR QUALITY</span>
+              <div className="w-px h-3 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
               <div className="flex items-center gap-1.5 md:gap-2">
                 <div className="relative flex h-2 w-2">
                   <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
                   <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
                 </div>
                 <span className="inline-block min-w-[35px] md:min-w-[45px]">AQI {aqi ?? '--'}</span>
-                <span className={`font-bold hidden md:inline ${!aqi ? 'text-slate-400' : aqi <= 50 ? 'text-emerald-600' : aqi <= 100 ? 'text-yellow-600' : aqi <= 150 ? 'text-orange-600' : 'text-red-600'}`}>
+                <span className={`font-bold hidden md:inline ${!aqi ? 'text-slate-400' : aqi <= 50 ? 'text-emerald-600 dark:text-emerald-400' : aqi <= 100 ? 'text-yellow-600 dark:text-yellow-400' : aqi <= 150 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>
                   {!aqi ? 'LOAD' : aqi <= 50 ? 'GOOD' : aqi <= 100 ? 'MODERATE' : aqi <= 150 ? 'UNHEALTHY' : 'DANGER'}
                 </span>
               </div>
@@ -353,10 +374,10 @@ export default function Home() {
           </section>
 
           {/* Minimalistic Footer */}
-          <footer className="w-full flex flex-col items-center justify-center pt-12 pb-12 mt-8 border-t border-slate-200/50">
+          <footer className="w-full flex flex-col items-center justify-center pt-12 pb-12 mt-8 border-t border-slate-200/50 dark:border-slate-800/50">
             <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={32} height={32} className="opacity-50 hover:opacity-100 transition-opacity mb-4 drop-shadow-sm rounded-lg" />
-            <p className="text-xs font-bold text-slate-400">© 2026 KABAW Orbital Crop Intelligence. All rights reserved.</p>
-            <p className="text-[10px] font-bold text-slate-400/60 mt-1 uppercase tracking-widest">Powered by Unibase & Open-Meteo</p>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500">© 2026 KABAW Orbital Crop Intelligence. All rights reserved.</p>
+            <p className="text-[10px] font-bold text-slate-400/60 dark:text-slate-500/60 mt-1 uppercase tracking-widest">Powered by Unibase & Open-Meteo</p>
           </footer>
         </div>
         
