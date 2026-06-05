@@ -16,6 +16,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "KABAW Space | Orbital Crop Intelligence",
   description: "Leveraging Sentinel-2 satellite imagery to compute NDVI for farmers.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    title: "KABAW Space",
+    statusBarStyle: "black-translucent",
+    startupImage: [
+      "/icon-512x512.png"
+    ]
+  }
 };
 
 export default function RootLayout({

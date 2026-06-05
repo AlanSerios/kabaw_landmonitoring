@@ -153,9 +153,6 @@ export default function Home() {
         setTimeout(() => {
           handleLocationSelect(parsedLat, parsedLng);
         }, 500);
-        
-        // Remove query params from URL after reading them
-        window.history.replaceState({}, document.title, window.location.pathname);
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -259,6 +256,14 @@ export default function Home() {
     setLoading(true);
     setError("");
     setScanResult(null);
+
+    // Update browser URL for deep linking
+    if (typeof window !== 'undefined') {
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set('lat', lat.toString());
+      newUrl.searchParams.set('lng', lng.toString());
+      window.history.replaceState(null, '', newUrl.toString());
+    }
 
     // Reverse geocode to get location name for the receipt
     try {
