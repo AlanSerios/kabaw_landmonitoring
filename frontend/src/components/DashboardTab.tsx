@@ -142,7 +142,7 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
         initial={{ y: "60%", x: "20%", opacity: 0 }}
         animate={{ y: "40%", x: "10%", opacity: 1 }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.8 }}
-        className="w-52 h-52 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+        className="w-40 h-40 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
         onClick={handleMascotClick}
       >
         <Image src="/uni_kuyawkabaw_mascot.svg" alt="Kuya Kabaw" fill className="object-contain object-bottom" />
@@ -154,9 +154,9 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
         initial={{ opacity: 0, scale: 0.95, x: 20, y: "10%" }}
         animate={{ opacity: 1, scale: 1, x: 10, y: "30%" }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
-        className="relative max-w-[160px] md:max-w-[220px] shrink-0 z-10 -mr-2 md:-mr-4"
+        className="relative max-w-[130px] md:max-w-[220px] shrink-0 z-10 -mr-2 md:-mr-4"
       >
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-4 shadow-2xl border border-gray-100/50 relative">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl border border-gray-100/50 relative">
           <TypewriterText text={displayedMessage} />
           {/* Chat bubble tail pointing right */}
           <div className="absolute top-1/2 -right-[10px] -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-l-[12px] border-l-white/95 border-b-[10px] border-b-transparent drop-shadow-md"></div>
@@ -258,7 +258,7 @@ export default function DashboardTab({
       </div>
 
       {/* Control Panel Column */}
-      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-56 md:mt-48 xl:mt-32 relative z-20">
+      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-32 md:mt-48 xl:mt-32 relative z-20">
         
         {/* Kuya Kabaw Peeking Mascot */}
         <div className="absolute bottom-full right-0 z-[-1]">

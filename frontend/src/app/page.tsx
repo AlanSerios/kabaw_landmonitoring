@@ -15,6 +15,8 @@ import { t, LanguageCode } from "@/lib/i18n";
 import DashboardTab from "@/components/DashboardTab";
 import AnalyticsTab from "@/components/AnalyticsTab";
 import ReportsTab from "@/components/ReportsTab";
+import WeatherPopover from "@/components/WeatherPopover";
+import NotificationsPopover from "@/components/NotificationsPopover";
 import { useTheme } from "next-themes";
 
 // Tab Navigation Component
@@ -350,12 +352,12 @@ export default function Home() {
         <header className="px-4 md:px-8 py-3 md:py-6 flex flex-col md:flex-row items-center justify-between shrink-0 relative z-[9999] gap-3 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           
           {/* LEFT: Menu & Title */}
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px] w-full md:w-auto justify-between md:justify-start overflow-hidden">
-            <div className="flex items-center gap-3 overflow-hidden">
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px] w-full md:w-auto justify-between md:justify-start">
+            <div className="flex items-center gap-2 md:gap-3">
               <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
-              <div className="flex-shrink-1 overflow-hidden">
+              <div className="flex-shrink-1">
                 <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
-                  {activeTab === 'dashboard' ? t('dashboard', language) : activeTab === 'analytics' ? t('analytics', language) : activeTab === 'reports' ? t('reports', language) : t('settings', language)}
+                  KABAW
                 </h2>
               </div>
             </div>
@@ -434,6 +436,12 @@ export default function Home() {
               </div>
             </div>
             
+            {/* Weather Widget */}
+            <WeatherPopover />
+
+            {/* Notification Bell */}
+            <NotificationsPopover />
+
             {/* Settings Popover Button */}
             <SettingsPopover />
           </div>
@@ -466,20 +474,40 @@ export default function Home() {
           </footer>
         </div>
         
-        {/* Mobile Bottom Navigation (Strictly Hidden on Desktop) */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#0a1c14] border-t border-[#153828] flex items-center justify-around px-2 py-2 pb-6 z-[10000] shadow-[0_-10px_40px_rgba(0,0,0,0.3)]">
-          <a href="#dashboard" onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'dashboard' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <SquaresFour weight={activeTab === 'dashboard' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Home</span>
-          </a>
-          <a href="#analytics" onClick={(e) => { e.preventDefault(); setActiveTab('analytics'); document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'analytics' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <ChartLineUp weight={activeTab === 'analytics' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Analytics</span>
-          </a>
-          <a href="#reports" onClick={(e) => { e.preventDefault(); setActiveTab('reports'); document.getElementById('reports')?.scrollIntoView({ behavior: 'smooth' }); }} className={`flex flex-col items-center p-2 rounded-xl transition-all ${activeTab === 'reports' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}>
-            <FileText weight={activeTab === 'reports' ? "duotone" : "regular"} className="w-6 h-6 mb-1" />
-            <span className="text-[10px] font-bold">Reports</span>
-          </a>
+        {/* Mobile Bottom Navigation - Premium Floating Pill (Strictly Hidden on Desktop) */}
+        <nav className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[340px] bg-slate-900/80 dark:bg-black/80 backdrop-blur-xl border border-slate-700/50 dark:border-white/10 rounded-full flex items-center justify-around px-2 py-1 z-[10000] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+          <motion.a 
+            href="#dashboard" 
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }); }} 
+            className={`flex flex-col items-center justify-center w-16 h-14 rounded-full transition-colors relative ${activeTab === 'dashboard' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}
+          >
+            {activeTab === 'dashboard' && <motion.div layoutId="nav-pill" className="absolute inset-0 bg-emerald-500/20 rounded-full border border-emerald-500/30" />}
+            <SquaresFour weight={activeTab === 'dashboard' ? "duotone" : "regular"} className="w-5 h-5 mb-0.5 relative z-10" />
+            <span className="text-[9px] font-bold relative z-10">Home</span>
+          </motion.a>
+
+          <motion.a 
+            href="#analytics" 
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.preventDefault(); setActiveTab('analytics'); document.getElementById('analytics')?.scrollIntoView({ behavior: 'smooth' }); }} 
+            className={`flex flex-col items-center justify-center w-16 h-14 rounded-full transition-colors relative ${activeTab === 'analytics' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}
+          >
+            {activeTab === 'analytics' && <motion.div layoutId="nav-pill" className="absolute inset-0 bg-emerald-500/20 rounded-full border border-emerald-500/30" />}
+            <ChartLineUp weight={activeTab === 'analytics' ? "duotone" : "regular"} className="w-5 h-5 mb-0.5 relative z-10" />
+            <span className="text-[9px] font-bold relative z-10">Analytics</span>
+          </motion.a>
+
+          <motion.a 
+            href="#reports" 
+            whileTap={{ scale: 0.9 }}
+            onClick={(e) => { e.preventDefault(); setActiveTab('reports'); document.getElementById('reports')?.scrollIntoView({ behavior: 'smooth' }); }} 
+            className={`flex flex-col items-center justify-center w-16 h-14 rounded-full transition-colors relative ${activeTab === 'reports' ? 'text-emerald-400' : 'text-slate-400 hover:text-white'}`}
+          >
+            {activeTab === 'reports' && <motion.div layoutId="nav-pill" className="absolute inset-0 bg-emerald-500/20 rounded-full border border-emerald-500/30" />}
+            <FileText weight={activeTab === 'reports' ? "duotone" : "regular"} className="w-5 h-5 mb-0.5 relative z-10" />
+            <span className="text-[9px] font-bold relative z-10">Reports</span>
+          </motion.a>
         </nav>
       </main>
     </div>
