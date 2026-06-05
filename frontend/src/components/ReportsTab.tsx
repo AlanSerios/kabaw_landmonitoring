@@ -159,12 +159,12 @@ export default function ReportsTab() {
                     <div
                       className="h-3 md:h-4 w-[88%] rounded-full mb-1 relative overflow-hidden"
                       style={{
-                        background: "#050505",
+                        background: "#080808",
                         boxShadow:
-                          "inset 0 4px 6px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,0.15)",
+                          "inset 0 6px 10px rgba(0,0,0,1), inset 0 2px 4px rgba(0,0,0,0.8), 0 1px 0 rgba(255,255,255,0.4)",
                       }}
                     >
-                      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent opacity-80" />
+                      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent opacity-90" />
                     </div>
                   </div>
                   {/* Bottom edge shadow cast over paper */}
@@ -185,16 +185,19 @@ export default function ReportsTab() {
                 >
                   <motion.div
                     key={key}
-                    className="w-[92%]"
+                    className="w-[92%] relative"
                     initial={{ clipPath: "inset(0 0 100% 0)" }}
                     animate={{ clipPath: animating ? "inset(0 0 0% 0)" : "inset(0 0 100% 0)" }}
-                    transition={shouldReduceMotion ? { duration: 0.5 } : { duration: 2.8, ease: "linear" }}
+                    transition={shouldReduceMotion ? { duration: 0.5 } : { type: "spring", bounce: 0.2, duration: 2.8 }}
                   >
+                    {/* Fixed inner shadow at the top to simulate depth curving into the dark roller */}
+                    <div className="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-black/25 to-transparent z-50 pointer-events-none" />
+
                     <motion.div
                       initial={{ y: "-100%", scaleY: -1 }}
                       animate={{ y: animating ? "0%" : "-100%", scaleY: -1 }}
-                      transition={shouldReduceMotion ? { duration: 0.5 } : { duration: 2.8, ease: "linear" }}
-                      className="w-full"
+                      transition={shouldReduceMotion ? { duration: 0.5 } : { type: "spring", bounce: 0.2, duration: 2.8 }}
+                      className="w-full relative"
                     >
                       <div
                         className={`bg-[#faf6ec] text-slate-900 relative ${ibmPlexMono.className} w-full`}
