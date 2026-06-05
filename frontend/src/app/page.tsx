@@ -215,7 +215,9 @@ export default function Home() {
     timeframe,
     language,
     mainLocation,
-    setShowMainBaseModal
+    setShowMainBaseModal,
+    isPlottingMainLocation,
+    monitoredBases
   } = useAppStore();
 
   // Parse URL parameters for shared location
@@ -615,6 +617,21 @@ export default function Home() {
             <span className="text-[9px] font-bold relative z-10">Reports</span>
           </motion.a>
         </nav>
+
+        {/* Plot Secondary Base Toast */}
+        <AnimatePresence>
+          {isPlottingMainLocation && monitoredBases.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-24 left-1/2 -translate-x-1/2 z-[9999] px-6 py-3 bg-emerald-500 text-white font-bold text-sm rounded-full shadow-[0_8px_32px_rgba(16,185,129,0.4)] flex items-center gap-3 border border-emerald-400"
+            >
+              <Target weight="bold" className="w-5 h-5 animate-pulse" />
+              Plot Another Base: Click anywhere on the map
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

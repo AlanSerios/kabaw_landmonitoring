@@ -9,7 +9,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 export default function NotificationsPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, markAllNotificationsRead, setActiveTab } = useAppStore();
+  const [selectedBaseId, setSelectedBaseId] = useState<string | 'all'>('all');
+  const { notifications, markAllNotificationsRead, setActiveTab, setActiveReportMode, setNewlyAddedBaseId, monitoredBases } = useAppStore();
   const hasUnread = notifications.some(n => !n.read);
 
   const handleOpen = () => {
@@ -57,23 +58,54 @@ export default function NotificationsPopover() {
               {/* Popover Header */}
               <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                 <h3 className="font-bold text-sm text-slate-900 dark:text-white">Notifications</h3>
-                <button 
-                  onClick={markAllNotificationsRead}
-                  className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
-                >
-                  Mark all as read
-                </button>
+                <div className="flex items-center gap-3">
+                  {monitoredBases.length > 1 && (
+                    <select 
+                      value={selectedBaseId}
+                      onChange={(e) => setSelectedBaseId(e.target.value)}
+                      className="text-[10px] font-bold text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md px-1 py-0.5 outline-none"
+                    >
+                      <option value="all">All Bases</option>
+                      {monitoredBases.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                  )}
+                  <button 
+                    onClick={markAllNotificationsRead}
+                    className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
+                  >
+                    Mark read
+                  </button>
+                </div>
               </div>
 
               {/* Notifications List */}
               <div className="max-h-80 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500">
-                    <p className="text-sm">No new notifications</p>
-                  </div>
-                ) : (
-                  notifications.map((notif) => (
-                    <div key={notif.id} className={`p-4 border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer flex gap-3 ${!notif.read ? 'bg-slate-50/50 dark:bg-slate-800/30' : ''}`}>
+                {(() => {
+                  const filtered = notifications.filter(n => selectedBaseId === 'all' || !n.baseId || n.baseId === selectedBaseId);
+                  
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="p-8 text-center text-slate-500">
+                        <p className="text-sm">No new notifications</p>
+                      </div>
+                    );
+                  }
+
+                  return filtered.map((notif) => (
+                    <div 
+                      key={notif.id} 
+                      onClick={() => {
+                        if (notif.title === 'Weekly Report Ready') {
+                          setActiveReportMode('weekly');
+                          setActiveTab('reports');
+                          setIsOpen(false);
+                        } else if (notif.title === 'New Base Plotted' && notif.baseId) {
+                          setNewlyAddedBaseId(notif.baseId);
+                          setIsOpen(false);
+                        }
+                      }}
+                      className={`p-4 border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors cursor-pointer flex gap-3 ${!notif.read ? 'bg-slate-50/50 dark:bg-slate-800/30' : ''}`}
+                    >
                       <div className="shrink-0 mt-0.5">
                         {notif.type === 'warning' && <Warning weight="duotone" className="w-5 h-5 text-orange-500" />}
                         {notif.type === 'success' && <CheckCircle weight="duotone" className="w-5 h-5 text-emerald-500" />}
@@ -88,8 +120,8 @@ export default function NotificationsPopover() {
                         </span>
                       </div>
                     </div>
-                  ))
-                )}
+                  ));
+                })()}
               </div>
 
               {/* View All Button */}

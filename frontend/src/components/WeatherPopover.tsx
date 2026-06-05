@@ -7,7 +7,10 @@ import { useAppStore } from '@/store';
 
 export default function WeatherPopover() {
   const [isOpen, setIsOpen] = useState(false);
-  const { mainLocation } = useAppStore();
+  const [selectedBaseId, setSelectedBaseId] = useState<string | null>(null);
+  const { mainLocation, monitoredBases } = useAppStore();
+
+  const activeBase = selectedBaseId ? monitoredBases.find(b => b.id === selectedBaseId) : (monitoredBases.length > 0 ? monitoredBases[0] : mainLocation);
 
   return (
     <div 
@@ -33,10 +36,22 @@ export default function WeatherPopover() {
           >
             {/* Popover Header */}
             <div className="p-4 border-b border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-br from-sky-50 to-white dark:from-slate-800 dark:to-slate-900">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-black text-slate-900 dark:text-white truncate max-w-[140px]">{mainLocation?.name || 'Cebu City'}</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Partly Cloudy</p>
+                  {monitoredBases.length > 1 ? (
+                    <select 
+                      value={selectedBaseId || monitoredBases[0].id}
+                      onChange={(e) => setSelectedBaseId(e.target.value)}
+                      className="font-black text-slate-900 dark:text-white bg-transparent outline-none max-w-[140px] appearance-none cursor-pointer hover:opacity-80 transition-opacity"
+                    >
+                      {monitoredBases.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select>
+                  ) : (
+                    <h3 className="font-black text-slate-900 dark:text-white truncate max-w-[140px]">
+                      {activeBase?.name || 'Cebu City'}
+                    </h3>
+                  )}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">Partly Cloudy</p>
                 </div>
                 <CloudSun weight="duotone" className="w-10 h-10 text-sky-500" />
               </div>

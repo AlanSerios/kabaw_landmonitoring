@@ -16,6 +16,7 @@ export type Notification = {
   message: string;
   time: string;
   read: boolean;
+  baseId?: string;
 };
 
 export type MonitoredBase = {
@@ -130,7 +131,19 @@ export const useAppStore = create<AppState>()(
           // Sync legacy mainLocation for now
           mainLocation: isFirst ? newBase : state.mainLocation,
           // Mark as newly added so the UI can prompt the user
-          newlyAddedBaseId: !isFirst ? newBase.id : null
+          newlyAddedBaseId: !isFirst ? newBase.id : null,
+          notifications: !isFirst ? [
+            {
+              id: Math.random().toString(36).substr(2, 9),
+              type: 'info',
+              title: 'New Base Plotted',
+              message: `You've added "${newBase.name}". Click here to set it as your primary base.`,
+              time: new Date().toISOString(),
+              read: false,
+              baseId: newBase.id
+            },
+            ...state.notifications
+          ] : state.notifications
         };
       }),
       removeMonitoredBase: (id) => set((state) => ({

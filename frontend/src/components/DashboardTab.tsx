@@ -136,11 +136,11 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
   };
 
   return (
-    <div className="flex flex-row-reverse items-center gap-0 pb-0 pr-4 md:pr-8">
-      {/* Mascot Graphic - Scaled to a good small size, shifted down to peek from behind the card */}
+    <div className="flex flex-row-reverse items-end justify-end gap-0 pb-0 w-full px-5 md:px-8">
+      {/* Mascot Graphic */}
       <motion.div 
-        initial={{ y: "60%", x: "20%", opacity: 0 }}
-        animate={{ y: "40%", x: "10%", opacity: 1 }}
+        initial={{ y: "40%", x: "0%", opacity: 0 }}
+        animate={{ y: "25%", x: "-5%", opacity: 1 }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.8 }}
         className="w-40 h-40 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
         onClick={handleMascotClick}
@@ -152,14 +152,14 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
       <motion.div 
         key={displayedMessage}
         initial={{ opacity: 0, scale: 0.95, x: 20, y: "10%" }}
-        animate={{ opacity: 1, scale: 1, x: 10, y: "30%" }}
+        animate={{ opacity: 1, scale: 1, x: 10, y: "0%" }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
-        className="relative w-max max-w-[220px] md:max-w-[280px] shrink-0 z-10 -mr-2 md:-mr-4"
+        className="relative z-10 w-full flex justify-end"
       >
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl border border-gray-100/50 relative">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 shadow-2xl border border-gray-100/50 relative w-full">
           <TypewriterText text={displayedMessage} />
           {/* Chat bubble tail pointing right */}
-          <div className="absolute top-1/2 -right-[10px] -translate-y-1/2 w-0 h-0 border-t-[10px] border-t-transparent border-l-[12px] border-l-white/95 border-b-[10px] border-b-transparent drop-shadow-md"></div>
+          <div className="absolute top-1/2 -right-[8px] -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-l-[10px] border-l-white/95 border-b-[8px] border-b-transparent drop-shadow-md"></div>
         </div>
       </motion.div>
     </div>
@@ -261,8 +261,10 @@ export default function DashboardTab({
       <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-32 md:mt-48 xl:mt-32 relative z-20">
         
         {/* Kuya Kabaw Peeking Mascot */}
-        <div className="absolute bottom-full right-0 z-[-1]">
-           <KuyaKabaw status={currentStatus as 'optimal' | 'warning' | 'error' | 'standby'} loading={loading} message={error} />
+        <div className="absolute bottom-full left-0 right-0 z-[-1] flex justify-end items-end mb-[-2rem] pointer-events-none">
+           <div className="pointer-events-auto flex justify-end w-full">
+             <KuyaKabaw status={currentStatus as 'optimal' | 'warning' | 'error' | 'standby'} loading={loading} message={error} />
+           </div>
         </div>
 
         {/* Mission Control Panel */}
