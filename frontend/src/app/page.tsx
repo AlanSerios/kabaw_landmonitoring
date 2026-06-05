@@ -342,20 +342,34 @@ export default function Home() {
       {/* Main Content Area (Bento 2.0 Light Aesthetic) */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header (z-[9999] to stay above Leaflet map) */}
-        <header className="px-4 md:px-8 py-4 md:py-6 flex items-center justify-between shrink-0 relative z-[9999] gap-4 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
+        <header className="px-4 md:px-8 py-3 md:py-6 flex flex-col md:flex-row items-center justify-between shrink-0 relative z-[9999] gap-3 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           
           {/* LEFT: Menu & Title */}
-          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px]">
-            <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
-            <div className="hidden md:block flex-shrink-0">
-            <h2 className="text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-              {activeTab === 'dashboard' ? t('dashboard', language) : activeTab === 'analytics' ? t('analytics', language) : activeTab === 'reports' ? t('reports', language) : t('settings', language)}
-            </h2>
-          </div>
+          <div className="flex items-center gap-2 md:gap-4 flex-shrink-0 md:min-w-[200px] w-full md:w-auto justify-between md:justify-start overflow-hidden">
+            <div className="flex items-center gap-3 overflow-hidden">
+              <Image src="/unibase_kabaw_logo.svg" alt="Kabaw Logo" width={48} height={48} className="shrink-0 drop-shadow-sm rounded-xl w-[32px] h-[32px] md:w-[48px] md:h-[48px]" />
+              <div className="flex-shrink-1 overflow-hidden">
+                <h2 className="text-lg md:text-xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2 truncate">
+                  {activeTab === 'dashboard' ? t('dashboard', language) : activeTab === 'analytics' ? t('analytics', language) : activeTab === 'reports' ? t('reports', language) : t('settings', language)}
+                </h2>
+              </div>
+            </div>
+
+            {/* RIGHT CONTROLS ON MOBILE */}
+            <div className="flex md:hidden items-center gap-2 flex-shrink-0">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] font-black tracking-wide text-slate-800 dark:text-slate-200">
+                <div className="relative flex h-2 w-2">
+                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                </div>
+                <span>{aqi ?? '--'}</span>
+              </div>
+              <SettingsPopover />
+            </div>
           </div>
 
           {/* CENTER: Global Search */}
-          <div className="flex-1 max-w-xl mx-auto relative group z-[100]">
+          <div className="w-full md:flex-1 max-w-xl mx-auto relative group z-[100] mt-2 md:mt-0 order-last md:order-none">
             <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
               <input 
                 id="location-search"
@@ -397,8 +411,8 @@ export default function Home() {
             </AnimatePresence>
           </div>
 
-          {/* RIGHT: Controls */}
-          <div className="flex items-center gap-3 flex-shrink-0">
+          {/* RIGHT: Controls (Desktop Only) */}
+          <div className="hidden md:flex items-center gap-3 flex-shrink-0">
             {/* Live AQI Widget */}
             <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
               <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">AIR QUALITY</span>
