@@ -23,6 +23,15 @@ interface AppState {
   selectedLocation: { lat: number; lng: number } | null;
   setSelectedLocation: (location: { lat: number; lng: number } | null) => void;
   
+  mainLocation: { lat: number; lng: number; name: string } | null;
+  setMainLocation: (location: { lat: number; lng: number; name: string } | null) => void;
+  
+  isPlottingMainLocation: boolean;
+  setIsPlottingMainLocation: (isPlotting: boolean) => void;
+  
+  showMainBaseModal: boolean;
+  setShowMainBaseModal: (show: boolean) => void;
+  
   scanRadius: number;
   setScanRadius: (radius: number) => void;
   
@@ -62,6 +71,15 @@ export const useAppStore = create<AppState>()(
       selectedLocation: null,
       setSelectedLocation: (location) => set({ selectedLocation: location }),
       
+      mainLocation: null,
+      setMainLocation: (location) => set({ mainLocation: location }),
+      
+      isPlottingMainLocation: false,
+      setIsPlottingMainLocation: (isPlotting) => set({ isPlottingMainLocation: isPlotting }),
+      
+      showMainBaseModal: false,
+      setShowMainBaseModal: (show) => set({ showMainBaseModal: show }),
+      
       scanRadius: 25,
       setScanRadius: (radius) => set({ scanRadius: radius }),
 
@@ -100,7 +118,7 @@ export const useAppStore = create<AppState>()(
     {
       name: 'kabaw-storage',
       // only persist waypoints and settings, not transient state like current tab or scan results
-      partialize: (state) => ({ waypoints: state.waypoints, scanRadius: state.scanRadius, language: state.language }),
+      partialize: (state) => ({ waypoints: state.waypoints, scanRadius: state.scanRadius, language: state.language, mainLocation: state.mainLocation }),
     }
   )
 );

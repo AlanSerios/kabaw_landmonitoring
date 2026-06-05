@@ -5,7 +5,7 @@ import Image from "next/image";
 import { 
   MagnifyingGlass, CalendarBlank, SquaresFour, RocketLaunch, 
   ChartLineUp, FileText, Gear, Planet, CaretDown, List,
-  Thermometer, Wind, WifiHigh
+  Thermometer, Wind, WifiHigh, Target
 } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore, TabId } from "@/store";
@@ -17,6 +17,7 @@ import AnalyticsTab from "@/components/AnalyticsTab";
 import ReportsTab from "@/components/ReportsTab";
 import WeatherPopover from "@/components/WeatherPopover";
 import NotificationsPopover from "@/components/NotificationsPopover";
+import SetMainBaseModal from "@/components/SetMainBaseModal";
 import { useTheme } from "next-themes";
 
 // Tab Navigation Component
@@ -137,7 +138,9 @@ export default function Home() {
     setScanResult,
     setLocationName,
     timeframe,
-    language
+    language,
+    mainLocation,
+    setShowMainBaseModal
   } = useAppStore();
 
   // Parse URL parameters for shared location
@@ -348,6 +351,7 @@ export default function Home() {
 
       {/* Main Content Area (Bento 2.0 Light Aesthetic) */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+        <SetMainBaseModal />
         {/* Header (z-[9999] to stay above Leaflet map) */}
         <header className="px-4 md:px-8 py-3 md:py-6 flex flex-col md:flex-row items-center justify-between shrink-0 relative z-[9999] gap-3 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           
@@ -364,13 +368,27 @@ export default function Home() {
 
             {/* RIGHT CONTROLS ON MOBILE */}
             <div className="flex md:hidden items-center gap-2 flex-shrink-0">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] font-black tracking-wide text-slate-800 dark:text-slate-200">
-                <div className="relative flex h-2 w-2">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
-                </div>
-                <span>{aqi ?? '--'}</span>
-              </div>
+              {!mainLocation ? (
+                <button 
+                  onClick={() => setShowMainBaseModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 rounded-full font-bold text-[10px] tracking-wide active:scale-95 transition-transform"
+                >
+                  <Target weight="bold" className="w-3 h-3" /> Set Main Base
+                </button>
+              ) : (
+                <>
+                  {/* Compact Mobile AQI */}
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] font-black tracking-wide text-slate-800 dark:text-slate-200">
+                    <div className="relative flex h-2 w-2">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                    </div>
+                    <span>{aqi ?? '--'}</span>
+                  </div>
+                  <WeatherPopover />
+                  <NotificationsPopover />
+                </>
+              )}
               <SettingsPopover />
             </div>
           </div>
@@ -420,27 +438,38 @@ export default function Home() {
 
           {/* RIGHT: Controls (Desktop Only) */}
           <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-            {/* Live AQI Widget */}
-            <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
-              <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">AIR QUALITY</span>
-              <div className="w-px h-3 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
-              <div className="flex items-center gap-1.5 md:gap-2">
-                <div className="relative flex h-2 w-2">
-                  <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+            {!mainLocation ? (
+              <button 
+                onClick={() => setShowMainBaseModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-xs shadow-lg shadow-emerald-500/20 active:scale-95 transition-all"
+              >
+                <Target weight="bold" className="w-4 h-4" /> Set Main Base
+              </button>
+            ) : (
+              <>
+                {/* Live AQI Widget */}
+                <div className="flex items-center gap-1.5 md:gap-3 px-3 md:px-4 py-2 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm text-[10px] md:text-xs font-black tracking-wide text-slate-800 dark:text-slate-200 transition-colors duration-300">
+                  <span className="text-slate-500 dark:text-slate-400 hidden sm:inline">AIR QUALITY</span>
+                  <div className="w-px h-3 bg-slate-300 dark:bg-slate-700 hidden sm:block"></div>
+                  <div className="flex items-center gap-1.5 md:gap-2">
+                    <div className="relative flex h-2 w-2">
+                      <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!aqi ? 'bg-slate-400' : aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-yellow-400' : aqi <= 150 ? 'bg-orange-400' : 'bg-red-400'}`}></span>
+                      <span className={`relative inline-flex rounded-full h-2 w-2 ${!aqi ? 'bg-slate-500' : aqi <= 50 ? 'bg-emerald-500' : aqi <= 100 ? 'bg-yellow-500' : aqi <= 150 ? 'bg-orange-500' : 'bg-red-500'}`}></span>
+                    </div>
+                    <span className="inline-block min-w-[35px] md:min-w-[45px]">AQI {aqi ?? '--'}</span>
+                    <span className={`font-bold hidden md:inline ${!aqi ? 'text-slate-400' : aqi <= 50 ? 'text-emerald-600 dark:text-emerald-400' : aqi <= 100 ? 'text-yellow-600 dark:text-yellow-400' : aqi <= 150 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>
+                      {!aqi ? 'LOAD' : aqi <= 50 ? 'GOOD' : aqi <= 100 ? 'MODERATE' : aqi <= 150 ? 'UNHEALTHY' : 'DANGER'}
+                    </span>
+                  </div>
                 </div>
-                <span className="inline-block min-w-[35px] md:min-w-[45px]">AQI {aqi ?? '--'}</span>
-                <span className={`font-bold hidden md:inline ${!aqi ? 'text-slate-400' : aqi <= 50 ? 'text-emerald-600 dark:text-emerald-400' : aqi <= 100 ? 'text-yellow-600 dark:text-yellow-400' : aqi <= 150 ? 'text-orange-600 dark:text-orange-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {!aqi ? 'LOAD' : aqi <= 50 ? 'GOOD' : aqi <= 100 ? 'MODERATE' : aqi <= 150 ? 'UNHEALTHY' : 'DANGER'}
-                </span>
-              </div>
-            </div>
-            
-            {/* Weather Widget */}
-            <WeatherPopover />
+                
+                {/* Weather Widget */}
+                <WeatherPopover />
 
-            {/* Notification Bell */}
-            <NotificationsPopover />
+                {/* Notification Bell */}
+                <NotificationsPopover />
+              </>
+            )}
 
             {/* Settings Popover Button */}
             <SettingsPopover />

@@ -3,13 +3,15 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CloudSun, Wind, Drop, Thermometer } from '@phosphor-icons/react';
+import { useAppStore } from '@/store';
 
 export default function WeatherPopover() {
   const [isOpen, setIsOpen] = useState(false);
+  const { mainLocation } = useAppStore();
 
   return (
     <div 
-      className="relative flex items-center hidden md:block"
+      className="relative flex items-center"
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
     >
@@ -33,7 +35,7 @@ export default function WeatherPopover() {
             <div className="p-4 border-b border-slate-200/50 dark:border-slate-800/50 bg-gradient-to-br from-sky-50 to-white dark:from-slate-800 dark:to-slate-900">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-black text-slate-900 dark:text-white">Cebu City</h3>
+                  <h3 className="font-black text-slate-900 dark:text-white truncate max-w-[140px]">{mainLocation?.name || 'Cebu City'}</h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Partly Cloudy</p>
                 </div>
                 <CloudSun weight="duotone" className="w-10 h-10 text-sky-500" />

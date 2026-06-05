@@ -8,11 +8,20 @@ import { useAppStore } from "@/store";
 import { MapTrifold, CaretDown, Plus, CircleNotch, NavigationArrow } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Fix for default marker icon in Leaflet + Next.js
 const customIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+// A green/different colored marker for the main base
+const baseIcon = new L.Icon({
+  iconUrl: "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [1, -34],
@@ -27,9 +36,26 @@ interface MapProps {
 }
 
 function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: MapProps) {
+  const { isPlottingMainLocation, setIsPlottingMainLocation, setMainLocation, mainLocation } = useAppStore();
+
   useMapEvents({
-    click(e) {
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
+    async click(e) {
+      if (isPlottingMainLocation) {
+        // Reverse geocode to get name
+        let name = "Main Base";
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${e.latlng.lat}&lon=${e.latlng.lng}`);
+          const data = await res.json();
+          name = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || data.display_name.split(',')[0] || "Main Base";
+        } catch(err) {
+          console.error(err);
+        }
+        
+        setMainLocation({ lat: e.latlng.lat, lng: e.latlng.lng, name });
+        setIsPlottingMainLocation(false);
+      } else {
+        onLocationSelect(e.latlng.lat, e.latlng.lng);
+      }
     }
   });
 
@@ -43,13 +69,20 @@ function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: Map
     ] as [number, number][];
   };
 
-  return !selectedLocation ? null : (
+  return (
     <>
-      <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={customIcon} />
-      <Rectangle 
-        bounds={getBounds(selectedLocation.lat, selectedLocation.lng)} 
-        pathOptions={{ color: '#10b981', weight: 2, fillColor: '#10b981', fillOpacity: 0.2 }} 
-      />
+      {mainLocation && (
+        <Marker position={[mainLocation.lat, mainLocation.lng]} icon={baseIcon} />
+      )}
+      {selectedLocation && (
+        <>
+          <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={customIcon} />
+          <Rectangle 
+            bounds={getBounds(selectedLocation.lat, selectedLocation.lng)} 
+            pathOptions={{ color: '#10b981', weight: 2, fillColor: '#10b981', fillOpacity: 0.2 }} 
+          />
+        </>
+      )}
     </>
   );
 }

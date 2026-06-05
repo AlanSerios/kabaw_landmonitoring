@@ -9,7 +9,7 @@ export default function NotificationsPopover() {
   const [hasUnread, setHasUnread] = useState(true);
 
   return (
-    <div className="relative flex items-center hidden md:block">
+    <div className="relative flex items-center">
       {/* Notification Bell */}
       <button 
         onClick={() => { setIsOpen(!isOpen); setHasUnread(false); }}
