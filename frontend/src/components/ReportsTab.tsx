@@ -22,17 +22,9 @@ const playfair = Playfair_Display({
   style: ["normal", "italic"],
 });
 
-/* ─── Receipt Paper Print Animation (CSS Keyframes injected once) ─── */
-const PRINT_CSS = `
-@keyframes receiptFeed {
-  0%   { max-height: 0; }
-  100% { max-height: 1200px; }
-}
-@keyframes receiptFeedReduced {
-  0%   { max-height: 0; }
-  100% { max-height: 1200px; }
-}
-`;
+/* ─── Receipt Paper Print Animation ─── */
+// We use Framer Motion with hardware acceleration for buttery smooth printing.
+// No CSS keyframes needed here anymore.
 
 /* ─── Component ─── */
 export default function ReportsTab() {
@@ -51,6 +43,13 @@ export default function ReportsTab() {
   const [scanTime, setScanTime] = useState("");
   const [animating, setAnimating] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [qrUrl, setQrUrl] = useState("https://kabaw-landmonitoring.vercel.app");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setQrUrl(`${window.location.origin}?lat=${selectedLocation?.lat || 0}&lng=${selectedLocation?.lng || 0}`);
+    }
+  }, [selectedLocation]);
 
   /* ─── PDF Download handler ─── */
   const handleDownloadPDF = useCallback(async () => {
@@ -125,8 +124,6 @@ export default function ReportsTab() {
 
   return (
     <>
-      {/* Inject keyframe CSS */}
-      <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
 
       <div
         ref={triggerRef}
@@ -160,14 +157,15 @@ export default function ReportsTab() {
 
                     {/* The dark slot opening */}
                     <div
-                      className="h-4 md:h-5 w-[88%] rounded-t-sm mb-0"
+                      className="h-3 md:h-4 w-[88%] rounded-full mb-1 relative overflow-hidden"
                       style={{
-                        background:
-                          "linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 100%)",
+                        background: "#050505",
                         boxShadow:
-                          "inset 0 4px 12px rgba(0,0,0,1), inset 0 -1px 0 rgba(255,255,255,0.08)",
+                          "inset 0 4px 6px rgba(0,0,0,1), 0 1px 0 rgba(255,255,255,0.15)",
                       }}
-                    />
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent opacity-80" />
+                    </div>
                   </div>
                   {/* Bottom edge shadow cast over paper */}
                   <div
@@ -180,29 +178,32 @@ export default function ReportsTab() {
                 </div>
 
                 {/* RECEIPT PAPER — sits BEHIND the top lip (z-20) */}
-                {/* Uses max-height + steps() for realistic mechanical printer feed */}
-                <div className="relative z-20 -mt-[2px] flex justify-center">
-                  <div
+                {/* Uses GPU-accelerated scaleY(-1) + clipPath for buttery smooth mechanical feed without layout lag */}
+                <div 
+                  className="relative z-20 -mt-[2px] flex justify-center"
+                  style={{ filter: "drop-shadow(0 12px 24px rgba(0,0,0,0.12)) drop-shadow(0 4px 8px rgba(0,0,0,0.06))" }}
+                >
+                  <motion.div
                     key={key}
-                    className="w-[92%] overflow-hidden"
-                    style={{
-                      maxHeight: animating ? "1200px" : "0",
-                      animation: animating
-                        ? shouldReduceMotion
-                          ? "receiptFeedReduced 0.5s linear forwards"
-                          : "receiptFeed 2.8s steps(40, end) forwards"
-                        : "none",
-                    }}
+                    className="w-[92%]"
+                    initial={{ clipPath: "inset(0 0 100% 0)" }}
+                    animate={{ clipPath: animating ? "inset(0 0 0% 0)" : "inset(0 0 100% 0)" }}
+                    transition={shouldReduceMotion ? { duration: 0.5 } : { duration: 2.8, ease: "linear" }}
                   >
-                    <div
-                      className={`bg-[#faf6ec] text-slate-900 relative ${ibmPlexMono.className}`}
-                      style={{
-                        filter:
-                          "drop-shadow(0 12px 24px rgba(0,0,0,0.12)) drop-shadow(0 4px 8px rgba(0,0,0,0.06))",
-                        clipPath:
-                          "polygon(0 0, 100% 0, 100% calc(100% - 8px), 97% 100%, 94% calc(100% - 8px), 91% 100%, 88% calc(100% - 8px), 85% 100%, 82% calc(100% - 8px), 79% 100%, 76% calc(100% - 8px), 73% 100%, 70% calc(100% - 8px), 67% 100%, 64% calc(100% - 8px), 61% 100%, 58% calc(100% - 8px), 55% 100%, 52% calc(100% - 8px), 49% 100%, 46% calc(100% - 8px), 43% 100%, 40% calc(100% - 8px), 37% 100%, 34% calc(100% - 8px), 31% 100%, 28% calc(100% - 8px), 25% 100%, 22% calc(100% - 8px), 19% 100%, 16% calc(100% - 8px), 13% 100%, 10% calc(100% - 8px), 7% 100%, 4% calc(100% - 8px), 1% 100%, 0 calc(100% - 8px))",
-                      }}
+                    <motion.div
+                      initial={{ y: "-100%", scaleY: -1 }}
+                      animate={{ y: animating ? "0%" : "-100%", scaleY: -1 }}
+                      transition={shouldReduceMotion ? { duration: 0.5 } : { duration: 2.8, ease: "linear" }}
+                      className="w-full"
                     >
+                      <div
+                        className={`bg-[#faf6ec] text-slate-900 relative ${ibmPlexMono.className} w-full`}
+                        style={{
+                          transform: "scaleY(-1)",
+                          clipPath:
+                            "polygon(0 0, 100% 0, 100% calc(100% - 8px), 97% 100%, 94% calc(100% - 8px), 91% 100%, 88% calc(100% - 8px), 85% 100%, 82% calc(100% - 8px), 79% 100%, 76% calc(100% - 8px), 73% 100%, 70% calc(100% - 8px), 67% 100%, 64% calc(100% - 8px), 61% 100%, 58% calc(100% - 8px), 55% 100%, 52% calc(100% - 8px), 49% 100%, 46% calc(100% - 8px), 43% 100%, 40% calc(100% - 8px), 37% 100%, 34% calc(100% - 8px), 31% 100%, 28% calc(100% - 8px), 25% 100%, 22% calc(100% - 8px), 19% 100%, 16% calc(100% - 8px), 13% 100%, 10% calc(100% - 8px), 7% 100%, 4% calc(100% - 8px), 1% 100%, 0 calc(100% - 8px))",
+                        }}
+                      >
                       {/* Noise texture overlay */}
                       <div
                         className="absolute inset-0 opacity-[0.035] pointer-events-none mix-blend-multiply"
@@ -341,7 +342,7 @@ export default function ReportsTab() {
 
                         <div className="flex flex-col items-center mt-5 mb-3">
                           <QRCodeSVG
-                            value={`https://kabaw-landmonitoring.vercel.app?lat=${selectedLocation?.lat || 0}&lng=${selectedLocation?.lng || 0}`}
+                            value={qrUrl}
                             size={72}
                             bgColor="transparent"
                             fgColor="#1e3a5f"
@@ -370,7 +371,8 @@ export default function ReportsTab() {
                         <div className="h-3" />
                       </div>
                     </div>
-                  </div>
+                    </motion.div>
+                  </motion.div>
                 </div>
 
                 {/* PRINTER BOTTOM BODY — sits BEHIND the paper (z-10) */}
