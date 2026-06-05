@@ -7,6 +7,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import { IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import Image from "next/image";
+import html2canvas from "html2canvas-pro";
+import { jsPDF } from "jspdf";
 
 /* ─── Fonts ─── */
 const ibmPlexMono = IBM_Plex_Mono({
@@ -34,18 +36,54 @@ const PRINT_CSS = `
 
 /* ─── Component ─── */
 export default function ReportsTab() {
-  const { scanResult, selectedLocation } = useAppStore();
+  const { scanResult, selectedLocation, locationName } = useAppStore();
   const shouldReduceMotion = useReducedMotion();
 
   /* Scroll trigger ref — animation starts when this enters the viewport */
   const triggerRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(triggerRef, { once: true, amount: 0.15 });
 
+  const receiptContentRef = useRef<HTMLDivElement>(null);
+
   const [key, setKey] = useState(0);
   const [receiptId, setReceiptId] = useState("");
   const [scanDate, setScanDate] = useState("");
   const [scanTime, setScanTime] = useState("");
   const [animating, setAnimating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  /* ─── PDF Download handler ─── */
+  const handleDownloadPDF = useCallback(async () => {
+    if (!receiptContentRef.current || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const canvas = await html2canvas(receiptContentRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#faf6ec",
+        logging: false,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const imgW = canvas.width;
+      const imgH = canvas.height;
+
+      // Receipt-shaped PDF (custom page size in mm)
+      const pdfW = 80; // 80mm receipt width
+      const pdfH = (imgH / imgW) * pdfW;
+      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: [pdfW, pdfH + 10] });
+      pdf.addImage(imgData, "PNG", 5, 5, pdfW - 10, pdfH);
+      pdf.save(`Kabaw_Report_${receiptId || "receipt"}.pdf`);
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [isGenerating, receiptId]);
+
+  /* ─── Print handler ─── */
+  const handlePrint = useCallback(() => {
+    window.print();
+  }, []);
 
   useEffect(() => {
     if (scanResult) {
@@ -174,7 +212,7 @@ export default function ReportsTab() {
                         }}
                       />
 
-                      <div className="relative z-10 px-6 py-7 md:px-7 md:py-9">
+                      <div ref={receiptContentRef} className="relative z-10 px-6 py-7 md:px-7 md:py-9">
                         {/* ── Logo & Brand ── */}
                         <div className="flex flex-col items-center mb-7">
                           <Image
@@ -212,10 +250,9 @@ export default function ReportsTab() {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="font-semibold">COORDS</span>
-                            <span className="font-bold text-slate-800">
-                              {selectedLocation?.lat.toFixed(4)},{" "}
-                              {selectedLocation?.lng.toFixed(4)}
+                            <span className="font-semibold">LOCATION</span>
+                            <span className="font-bold text-slate-800 text-right max-w-[55%] truncate" title={locationName || `${selectedLocation?.lat.toFixed(4)}, ${selectedLocation?.lng.toFixed(4)}`}>
+                              {locationName || `${selectedLocation?.lat.toFixed(4)}, ${selectedLocation?.lng.toFixed(4)}`}
                             </span>
                           </div>
                           <div className="flex justify-between">
@@ -439,14 +476,15 @@ export default function ReportsTab() {
                 className="flex flex-col sm:flex-row gap-3 pt-2"
               >
                 <button
-                  onClick={() => window.print()}
-                  className="px-7 py-3.5 bg-[#1e3a5f] text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#162d4a] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-slate-900/15"
+                  onClick={handleDownloadPDF}
+                  disabled={isGenerating}
+                  className="px-7 py-3.5 bg-[#1e3a5f] text-white rounded-full font-bold uppercase tracking-widest text-xs hover:bg-[#162d4a] active:scale-[0.98] transition-all flex items-center justify-center gap-2.5 shadow-lg shadow-slate-900/15 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <DownloadSimple weight="bold" className="w-4 h-4" />
-                  Download PDF
+                  {isGenerating ? "Generating..." : "Download PDF"}
                 </button>
                 <button
-                  onClick={() => window.print()}
+                  onClick={handlePrint}
                   className="px-7 py-3.5 bg-transparent border-2 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 rounded-full font-bold uppercase tracking-widest text-xs hover:border-slate-400 active:scale-[0.98] transition-all flex items-center justify-center gap-2.5"
                 >
                   <Printer weight="bold" className="w-4 h-4" />
