@@ -1,4 +1,4 @@
-import { Globe, Leaf, Drop, Warning } from "@phosphor-icons/react";
+import { Globe, Leaf, Drop } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppStore } from "@/store";
 import dynamic from "next/dynamic";

@@ -5,7 +5,7 @@ import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
 import L from "leaflet";
 import { useAppStore } from "@/store";
-import { MapTrifold, CaretDown, Plus, Crosshair, CircleNotch, NavigationArrow } from "@phosphor-icons/react";
+import { MapTrifold, CaretDown, Plus, CircleNotch, NavigationArrow } from "@phosphor-icons/react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Fix for default marker icon in Leaflet + Next.js
@@ -199,7 +199,7 @@ function LocationButton({ onLocationSelect }: { onLocationSelect: (lat: number, 
         
         setIsLocating(false);
       },
-      (error) => {
+      () => {
         alert("Unable to retrieve your location. Please check your browser permissions.");
         setIsLocating(false);
       },
