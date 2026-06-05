@@ -2,7 +2,7 @@
 
 import { MapContainer, TileLayer, Marker, useMapEvents, ZoomControl, Rectangle, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import L from "leaflet";
 import { useAppStore } from "@/store";
 import { MapTrifold, CaretDown, Plus, CircleNotch, NavigationArrow } from "@phosphor-icons/react";
@@ -36,11 +36,16 @@ interface MapProps {
 }
 
 function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: MapProps) {
-  const { isPlottingMainLocation, setIsPlottingMainLocation, setMainLocation, mainLocation } = useAppStore();
+  const { isPlottingMainLocation, setIsPlottingMainLocation, addMonitoredBase, mainLocation, monitoredBases, primaryBaseId } = useAppStore();
+
+  const isPlottingRef = useRef(isPlottingMainLocation);
+  useEffect(() => {
+    isPlottingRef.current = isPlottingMainLocation;
+  }, [isPlottingMainLocation]);
 
   useMapEvents({
     async click(e) {
-      if (isPlottingMainLocation) {
+      if (isPlottingRef.current) {
         // Reverse geocode to get name
         let name = "Main Base";
         try {
@@ -51,7 +56,7 @@ function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: Map
           console.error(err);
         }
         
-        setMainLocation({ lat: e.latlng.lat, lng: e.latlng.lng, name });
+        addMonitoredBase({ lat: e.latlng.lat, lng: e.latlng.lng, name });
         setIsPlottingMainLocation(false);
       } else {
         onLocationSelect(e.latlng.lat, e.latlng.lng);
@@ -71,9 +76,13 @@ function LocationMarker({ onLocationSelect, radius = 25, selectedLocation }: Map
 
   return (
     <>
-      {mainLocation && (
-        <Marker position={[mainLocation.lat, mainLocation.lng]} icon={baseIcon} />
-      )}
+      {monitoredBases.map((base) => (
+        <Marker 
+          key={base.id} 
+          position={[base.lat, base.lng]} 
+          icon={primaryBaseId === base.id ? baseIcon : customIcon} 
+        />
+      ))}
       {selectedLocation && (
         <>
           <Marker position={[selectedLocation.lat, selectedLocation.lng]} icon={customIcon} />

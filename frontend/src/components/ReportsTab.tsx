@@ -106,10 +106,6 @@ export default function ReportsTab() {
     }
   }, [scanResult]);
 
-  if (activeReportMode === 'weekly') {
-    return <WeeklyReportView />;
-  }
-
   /* Trigger animation when in view */
   useEffect(() => {
     if (isInView && scanResult) {
@@ -126,6 +122,10 @@ export default function ReportsTab() {
   };
 
   const status = getStatus();
+
+  if (activeReportMode === 'weekly') {
+    return <WeeklyReportView />;
+  }
 
   return (
     <>

@@ -69,6 +69,12 @@ interface AppState {
   showMainBaseModal: boolean;
   setShowMainBaseModal: (show: boolean) => void;
   
+  showConfirmAddBaseModal: boolean;
+  setShowConfirmAddBaseModal: (show: boolean) => void;
+  
+  toastMessage: { type: 'success' | 'info' | 'warning' | 'error', title: string, text: string } | null;
+  setToastMessage: (toast: { type: 'success' | 'info' | 'warning' | 'error', title: string, text: string } | null) => void;
+  
   scanRadius: number;
   setScanRadius: (radius: number) => void;
   
@@ -132,18 +138,25 @@ export const useAppStore = create<AppState>()(
           mainLocation: isFirst ? newBase : state.mainLocation,
           // Mark as newly added so the UI can prompt the user
           newlyAddedBaseId: !isFirst ? newBase.id : null,
-          notifications: !isFirst ? [
+          toastMessage: {
+            type: 'success',
+            title: isFirst ? 'Main Base Configured' : 'New Base Added',
+            text: `Successfully plotted "${newBase.name}" on the map.`
+          },
+          notifications: [
             {
               id: Math.random().toString(36).substr(2, 9),
-              type: 'info',
-              title: 'New Base Plotted',
-              message: `You've added "${newBase.name}". Click here to set it as your primary base.`,
+              type: 'success',
+              title: isFirst ? 'Main Base Plotted' : 'New Base Plotted',
+              message: isFirst 
+                ? `You've configured your main monitoring base at "${newBase.name}".`
+                : `You've added "${newBase.name}". Click here to set it as your primary base.`,
               time: new Date().toISOString(),
               read: false,
               baseId: newBase.id
             },
             ...state.notifications
-          ] : state.notifications
+          ]
         };
       }),
       removeMonitoredBase: (id) => set((state) => ({
@@ -176,6 +189,12 @@ export const useAppStore = create<AppState>()(
       
       showMainBaseModal: false,
       setShowMainBaseModal: (show) => set({ showMainBaseModal: show }),
+      
+      showConfirmAddBaseModal: false,
+      setShowConfirmAddBaseModal: (show) => set({ showConfirmAddBaseModal: show }),
+      
+      toastMessage: null,
+      setToastMessage: (toast) => set({ toastMessage: toast }),
       
       scanRadius: 25,
       setScanRadius: (radius) => set({ scanRadius: radius }),

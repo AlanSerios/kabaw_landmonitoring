@@ -142,7 +142,7 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
         initial={{ y: "40%", x: "0%", opacity: 0 }}
         animate={{ y: "25%", x: "-5%", opacity: 1 }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.8 }}
-        className="w-40 h-40 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300"
+        className="w-32 h-32 md:w-64 md:h-64 shrink-0 relative z-[-1] drop-shadow-xl cursor-pointer hover:scale-105 transition-transform duration-300 mb-[-2rem]"
         onClick={handleMascotClick}
       >
         <Image src="/uni_kuyawkabaw_mascot.svg" alt="Kuya Kabaw" fill className="object-contain object-bottom" />
@@ -156,7 +156,7 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
         className="relative z-10 w-full flex justify-end"
       >
-        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-4 shadow-2xl border border-gray-100/50 relative w-full">
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl border border-gray-100/50 relative w-full">
           <TypewriterText text={displayedMessage} />
           {/* Chat bubble tail pointing right */}
           <div className="absolute top-1/2 -right-[8px] -translate-y-1/2 w-0 h-0 border-t-[8px] border-t-transparent border-l-[10px] border-l-white/95 border-b-[8px] border-b-transparent drop-shadow-md"></div>
@@ -258,10 +258,10 @@ export default function DashboardTab({
       </div>
 
       {/* Control Panel Column */}
-      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-32 md:mt-48 xl:mt-32 relative z-20">
+      <div className="xl:col-span-5 flex flex-col gap-4 md:gap-6 mt-44 md:mt-52 xl:mt-36 relative z-20">
         
         {/* Kuya Kabaw Peeking Mascot */}
-        <div className="absolute bottom-full left-0 right-0 z-[-1] flex justify-end items-end mb-[-2rem] pointer-events-none">
+        <div className="absolute bottom-full left-0 right-0 z-[-1] flex justify-end items-end mb-1 pointer-events-none">
            <div className="pointer-events-auto flex justify-end w-full">
              <KuyaKabaw status={currentStatus as 'optimal' | 'warning' | 'error' | 'standby'} loading={loading} message={error} />
            </div>
