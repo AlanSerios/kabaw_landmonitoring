@@ -154,7 +154,7 @@ function KuyaKabaw({ status, type, message, loading }: { status?: 'optimal' | 'w
         initial={{ opacity: 0, scale: 0.95, x: 20, y: "10%" }}
         animate={{ opacity: 1, scale: 1, x: 10, y: "30%" }}
         transition={{ ease: [0.32, 0.72, 0, 1], duration: 0.7 }}
-        className="relative max-w-[130px] md:max-w-[220px] shrink-0 z-10 -mr-2 md:-mr-4"
+        className="relative w-max max-w-[220px] md:max-w-[280px] shrink-0 z-10 -mr-2 md:-mr-4"
       >
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl md:rounded-3xl p-3 md:p-4 shadow-2xl border border-gray-100/50 relative">
           <TypewriterText text={displayedMessage} />

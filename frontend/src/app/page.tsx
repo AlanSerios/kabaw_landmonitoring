@@ -18,6 +18,8 @@ import ReportsTab from "@/components/ReportsTab";
 import WeatherPopover from "@/components/WeatherPopover";
 import NotificationsPopover from "@/components/NotificationsPopover";
 import SetMainBaseModal from "@/components/SetMainBaseModal";
+import SetPrimaryBaseModal from "@/components/SetPrimaryBaseModal";
+import WaypointNameModal from "@/components/WaypointNameModal";
 import { useTheme } from "next-themes";
 
 // Tab Navigation Component
@@ -49,7 +51,13 @@ const NavItem = ({ id, icon: Icon, label }: { id: TabId, icon: any, label: strin
 
 // Small Settings Popover (replaces the massive SettingsTab)
 function SettingsPopover() {
-  const { scanRadius, setScanRadius, language, setLanguage } = useAppStore();
+  const { 
+    scanRadius, setScanRadius, 
+    language, setLanguage,
+    monitoredBases, primaryBaseId, setPrimaryBaseId, removeMonitoredBase,
+    setIsPlottingMainLocation,
+    addNotification
+  } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -106,6 +114,73 @@ function SettingsPopover() {
                 </button>
               </div>
             )}
+
+            <hr className="my-3 border-slate-100 dark:border-slate-800" />
+            
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Monitored Bases</label>
+                <button 
+                  onClick={() => {
+                    setIsPlottingMainLocation(true);
+                    setIsOpen(false);
+                  }}
+                  className="text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+                >
+                  + Add
+                </button>
+              </div>
+              <div className="flex flex-col gap-1.5 mt-1">
+                {monitoredBases.length === 0 ? (
+                  <p className="text-xs text-slate-400">No bases set.</p>
+                ) : (
+                  monitoredBases.map((base) => (
+                    <div key={base.id} className={`flex items-center justify-between p-2 rounded-lg border ${primaryBaseId === base.id ? 'border-emerald-500 bg-emerald-50/50 dark:bg-emerald-900/20' : 'border-slate-200 dark:border-slate-700'}`}>
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{base.name}</span>
+                        {primaryBaseId === base.id && <span className="text-[9px] font-bold text-emerald-600 uppercase">Primary</span>}
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {primaryBaseId !== base.id && (
+                          <button 
+                            onClick={() => setPrimaryBaseId(base.id)}
+                            className="text-[10px] font-bold text-slate-500 hover:text-emerald-600 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 hover:border-emerald-500"
+                          >
+                            Set Primary
+                          </button>
+                        )}
+                        {monitoredBases.length > 1 && (
+                          <button 
+                            onClick={() => removeMonitoredBase(base.id)}
+                            className="text-slate-400 hover:text-red-500"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <hr className="my-3 border-slate-100 dark:border-slate-800" />
+
+            <div className="flex flex-col gap-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Developer Tools</label>
+              <button 
+                onClick={() => {
+                  addNotification({
+                    type: 'info',
+                    title: 'Weekly Report Ready',
+                    message: 'Your environmental analysis for the week is ready to view.'
+                  });
+                }}
+                className="w-full text-xs font-bold text-blue-600 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 py-2 rounded-lg transition-colors"
+              >
+                Simulate Monday (Send Report)
+              </button>
+            </div>
 
             <hr className="my-3 border-slate-100 dark:border-slate-800" />
 
@@ -352,6 +427,8 @@ export default function Home() {
       {/* Main Content Area (Bento 2.0 Light Aesthetic) */}
       <main className="flex-1 flex flex-col h-full overflow-hidden relative">
         <SetMainBaseModal />
+        <SetPrimaryBaseModal />
+        <WaypointNameModal />
         {/* Header (z-[9999] to stay above Leaflet map) */}
         <header className="px-4 md:px-8 py-3 md:py-6 flex flex-col md:flex-row items-center justify-between shrink-0 relative z-[9999] gap-3 md:gap-6 bg-[#f9fafb]/80 dark:bg-[#0f1115]/80 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-800/60 transition-colors duration-300">
           

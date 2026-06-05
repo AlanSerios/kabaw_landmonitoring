@@ -9,6 +9,7 @@ import { IBM_Plex_Mono, Playfair_Display } from "next/font/google";
 import Image from "next/image";
 import html2canvas from "html2canvas-pro";
 import { jsPDF } from "jspdf";
+import WeeklyReportView from "./WeeklyReportView";
 
 /* ─── Fonts ─── */
 const ibmPlexMono = IBM_Plex_Mono({
@@ -28,7 +29,7 @@ const playfair = Playfair_Display({
 
 /* ─── Component ─── */
 export default function ReportsTab() {
-  const { scanResult, selectedLocation, locationName } = useAppStore();
+  const { scanResult, selectedLocation, locationName, activeReportMode } = useAppStore();
   const shouldReduceMotion = useReducedMotion();
 
   /* Scroll trigger ref — animation starts when this enters the viewport */
@@ -104,6 +105,10 @@ export default function ReportsTab() {
       );
     }
   }, [scanResult]);
+
+  if (activeReportMode === 'weekly') {
+    return <WeeklyReportView />;
+  }
 
   /* Trigger animation when in view */
   useEffect(() => {

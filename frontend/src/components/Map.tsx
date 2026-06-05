@@ -128,7 +128,7 @@ function FlyToLocation({ center }: { center?: { lat: number, lng: number } | nul
 }
 
 function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number, lng: number) => void }) {
-  const { waypoints, addWaypoint, selectedLocation, mapCenter, setMapCenter, setLocationName } = useAppStore();
+  const { waypoints, selectedLocation, mapCenter, setMapCenter, setLocationName, setIsNamingWaypoint, setPendingWaypointCoords } = useAppStore();
   const [isOpen, setIsOpen] = useState(false);
 
   const saveWaypoint = () => {
@@ -136,10 +136,8 @@ function WaypointsOverlay({ onLocationSelect }: { onLocationSelect: (lat: number
     const targetLng = selectedLocation?.lng || mapCenter?.lng;
     
     if (targetLat && targetLng) {
-      const name = prompt("Enter a name for this waypoint:");
-      if (name) {
-        addWaypoint({ name, lat: targetLat, lng: targetLng });
-      }
+      setPendingWaypointCoords({ lat: targetLat, lng: targetLng });
+      setIsNamingWaypoint(true);
     } else {
       alert("Please search for a location or click on the map to drop a pin before saving a waypoint.");
     }

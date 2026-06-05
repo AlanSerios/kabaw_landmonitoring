@@ -9,6 +9,23 @@ export type Waypoint = {
   dateAdded: string;
 };
 
+export type Notification = {
+  id: string;
+  type: 'warning' | 'success' | 'info' | 'error';
+  title: string;
+  message: string;
+  time: string;
+  read: boolean;
+};
+
+export type MonitoredBase = {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  dateAdded: string;
+};
+
 export type TabId = 'dashboard' | 'missions' | 'map' | 'analytics' | 'reports';
 
 interface AppState {
@@ -23,11 +40,30 @@ interface AppState {
   selectedLocation: { lat: number; lng: number } | null;
   setSelectedLocation: (location: { lat: number; lng: number } | null) => void;
   
+  // We'll migrate away from single mainLocation to monitoredBases, but keep it for backwards compatibility during migration.
   mainLocation: { lat: number; lng: number; name: string } | null;
   setMainLocation: (location: { lat: number; lng: number; name: string } | null) => void;
   
+  monitoredBases: MonitoredBase[];
+  addMonitoredBase: (base: Omit<MonitoredBase, 'id' | 'dateAdded'>) => void;
+  removeMonitoredBase: (id: string) => void;
+  
+  primaryBaseId: string | null;
+  setPrimaryBaseId: (id: string | null) => void;
+  
+  newlyAddedBaseId: string | null;
+  setNewlyAddedBaseId: (id: string | null) => void;
+  
   isPlottingMainLocation: boolean;
   setIsPlottingMainLocation: (isPlotting: boolean) => void;
+  
+  isNamingWaypoint: boolean;
+  setIsNamingWaypoint: (isNaming: boolean) => void;
+  pendingWaypointCoords: { lat: number, lng: number } | null;
+  setPendingWaypointCoords: (coords: { lat: number, lng: number } | null) => void;
+  
+  activeReportMode: 'scan' | 'weekly';
+  setActiveReportMode: (mode: 'scan' | 'weekly') => void;
   
   showMainBaseModal: boolean;
   setShowMainBaseModal: (show: boolean) => void;
@@ -47,6 +83,12 @@ interface AppState {
   // Location name from search
   locationName: string;
   setLocationName: (name: string) => void;
+
+  // Notifications
+  notifications: Notification[];
+  addNotification: (notif: Omit<Notification, 'id' | 'read' | 'time'>) => void;
+  markAllNotificationsRead: () => void;
+  clearNotifications: () => void;
 
   // Analytics Timeframe
   timeframe: 'days' | 'months' | 'years';
@@ -74,8 +116,50 @@ export const useAppStore = create<AppState>()(
       mainLocation: null,
       setMainLocation: (location) => set({ mainLocation: location }),
       
+      monitoredBases: [],
+      addMonitoredBase: (base) => set((state) => {
+        const newBase = {
+          ...base,
+          id: Math.random().toString(36).substr(2, 9),
+          dateAdded: new Date().toISOString()
+        };
+        const isFirst = state.monitoredBases.length === 0;
+        return {
+          monitoredBases: [...state.monitoredBases, newBase],
+          primaryBaseId: isFirst ? newBase.id : state.primaryBaseId,
+          // Sync legacy mainLocation for now
+          mainLocation: isFirst ? newBase : state.mainLocation,
+          // Mark as newly added so the UI can prompt the user
+          newlyAddedBaseId: !isFirst ? newBase.id : null
+        };
+      }),
+      removeMonitoredBase: (id) => set((state) => ({
+        monitoredBases: state.monitoredBases.filter(b => b.id !== id),
+        primaryBaseId: state.primaryBaseId === id ? null : state.primaryBaseId
+      })),
+      
+      primaryBaseId: null,
+      setPrimaryBaseId: (id) => set((state) => {
+        const base = state.monitoredBases.find(b => b.id === id);
+        return { 
+          primaryBaseId: id,
+          mainLocation: base ? { lat: base.lat, lng: base.lng, name: base.name } : state.mainLocation
+        };
+      }),
+      
+      newlyAddedBaseId: null,
+      setNewlyAddedBaseId: (id) => set({ newlyAddedBaseId: id }),
+      
       isPlottingMainLocation: false,
       setIsPlottingMainLocation: (isPlotting) => set({ isPlottingMainLocation: isPlotting }),
+      
+      isNamingWaypoint: false,
+      setIsNamingWaypoint: (isNaming) => set({ isNamingWaypoint: isNaming }),
+      pendingWaypointCoords: null,
+      setPendingWaypointCoords: (coords) => set({ pendingWaypointCoords: coords }),
+      
+      activeReportMode: 'scan',
+      setActiveReportMode: (mode) => set({ activeReportMode: mode }),
       
       showMainBaseModal: false,
       setShowMainBaseModal: (show) => set({ showMainBaseModal: show }),
@@ -107,6 +191,24 @@ export const useAppStore = create<AppState>()(
       locationName: '',
       setLocationName: (name) => set({ locationName: name }),
 
+      // Notifications
+      notifications: [],
+      addNotification: (notif) => set((state) => ({
+        notifications: [
+          {
+            ...notif,
+            id: Math.random().toString(36).substr(2, 9),
+            time: new Date().toISOString(),
+            read: false
+          },
+          ...state.notifications
+        ]
+      })),
+      markAllNotificationsRead: () => set((state) => ({
+        notifications: state.notifications.map(n => ({ ...n, read: true }))
+      })),
+      clearNotifications: () => set({ notifications: [] }),
+
       // Analytics Timeframe
       timeframe: 'days',
       setTimeframe: (tf) => set({ timeframe: tf }),
@@ -118,7 +220,15 @@ export const useAppStore = create<AppState>()(
     {
       name: 'kabaw-storage',
       // only persist waypoints and settings, not transient state like current tab or scan results
-      partialize: (state) => ({ waypoints: state.waypoints, scanRadius: state.scanRadius, language: state.language, mainLocation: state.mainLocation }),
+      partialize: (state) => ({ 
+        waypoints: state.waypoints, 
+        scanRadius: state.scanRadius, 
+        language: state.language, 
+        mainLocation: state.mainLocation,
+        monitoredBases: state.monitoredBases,
+        primaryBaseId: state.primaryBaseId,
+        notifications: state.notifications
+      }),
     }
   )
 );
