@@ -138,6 +138,29 @@ export default function Home() {
     language
   } = useAppStore();
 
+  // Parse URL parameters for shared location
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const lat = params.get('lat');
+    const lng = params.get('lng');
+    
+    if (lat && lng) {
+      const parsedLat = parseFloat(lat);
+      const parsedLng = parseFloat(lng);
+      if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+        setMapCenter({ lat: parsedLat, lng: parsedLng });
+        // Small delay to ensure map is ready
+        setTimeout(() => {
+          handleLocationSelect(parsedLat, parsedLng);
+        }, 500);
+        
+        // Remove query params from URL after reading them
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Local UI State
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -236,6 +259,22 @@ export default function Home() {
     setLoading(true);
     setError("");
     setScanResult(null);
+
+    // Reverse geocode to get location name for the receipt
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+      const data = await res.json();
+      if (data && data.display_name) {
+        const nameParts = data.display_name.split(',');
+        const name = nameParts.slice(0, 2).join(',').trim();
+        setLocationName(name);
+      } else {
+        setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      }
+    } catch (err) {
+      console.error("Reverse geocoding failed", err);
+      setLocationName(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";

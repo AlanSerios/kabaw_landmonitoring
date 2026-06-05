@@ -339,10 +339,9 @@ export default function ReportsTab() {
                           </p>
                         </div>
 
-                        {/* ── QR Code ── */}
                         <div className="flex flex-col items-center mt-5 mb-3">
                           <QRCodeSVG
-                            value="https://kabaw-landmonitoring.vercel.app"
+                            value={`https://kabaw-landmonitoring.vercel.app?lat=${selectedLocation?.lat || 0}&lng=${selectedLocation?.lng || 0}`}
                             size={72}
                             bgColor="transparent"
                             fgColor="#1e3a5f"
